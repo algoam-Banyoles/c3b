@@ -1,7 +1,7 @@
 const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
 const cors = require('cors');
+const supabase = require('./supabase');
+require('dotenv').config();
 
 const app = express();
 
@@ -10,63 +10,85 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
-// Ruta per al fitxer JSON de Gómez i Chuecos
-const GOMEZ_FILE = path.join(__dirname, 'partides_gomez_updated.json');
-const CHUECOS_FILE = path.join(__dirname, 'partides_chuecos_updated.json');
-
 // API per obtenir partides de Gómez
 app.get('/api/partides/gomez', async (req, res) => {
     try {
-        const data = await fs.readFile(GOMEZ_FILE, 'utf8');
-        res.json(JSON.parse(data));
+        const { data, error } = await supabase
+            .from('partides_gomez')
+            .select('*')
+            .order('num', { ascending: true });
+
+        if (error) throw error;
+
+        console.log('✅ Partides de Gómez carregades:', data.length);
+        res.json(data);
     } catch (error) {
-        console.error('Error llegint partides_gomez_updated.json:', error);
-        res.status(500).json({ error: 'Error llegint les dades' });
+        console.error('❌ Error llegint partides de Gómez:', error);
+        res.status(500).json({ error: 'Error llegint les dades', details: error.message });
     }
 });
 
-// API per guardar partides de Gómez
+// API per guardar partides de Gómez (reemplaça totes)
 app.post('/api/partides/gomez', async (req, res) => {
     try {
         const partides = req.body;
-        await fs.writeFile(
-            GOMEZ_FILE,
-            JSON.stringify(partides, null, 4),
-            'utf8'
-        );
-        console.log('✅ Partides de Gómez guardades correctament');
+
+        // Eliminar totes les partides existents
+        await supabase.from('partides_gomez').delete().neq('id', 0);
+
+        // Inserir les noves partides
+        const { data, error } = await supabase
+            .from('partides_gomez')
+            .insert(partides);
+
+        if (error) throw error;
+
+        console.log('✅ Partides de Gómez guardades correctament:', partides.length);
         res.json({ success: true, message: 'Partides guardades correctament' });
     } catch (error) {
-        console.error('Error guardant partides_gomez_updated.json:', error);
-        res.status(500).json({ error: 'Error guardant les dades' });
+        console.error('❌ Error guardant partides de Gómez:', error);
+        res.status(500).json({ error: 'Error guardant les dades', details: error.message });
     }
 });
 
 // API per obtenir partides de Chuecos
 app.get('/api/partides/chuecos', async (req, res) => {
     try {
-        const data = await fs.readFile(CHUECOS_FILE, 'utf8');
-        res.json(JSON.parse(data));
+        const { data, error } = await supabase
+            .from('partides_chuecos')
+            .select('*')
+            .order('num', { ascending: true });
+
+        if (error) throw error;
+
+        console.log('✅ Partides de Chuecos carregades:', data.length);
+        res.json(data);
     } catch (error) {
-        console.error('Error llegint partides_chuecos_updated.json:', error);
-        res.status(500).json({ error: 'Error llegint les dades' });
+        console.error('❌ Error llegint partides de Chuecos:', error);
+        res.status(500).json({ error: 'Error llegint les dades', details: error.message });
     }
 });
 
-// API per guardar partides de Chuecos
+// API per guardar partides de Chuecos (reemplaça totes)
 app.post('/api/partides/chuecos', async (req, res) => {
     try {
         const partides = req.body;
-        await fs.writeFile(
-            CHUECOS_FILE,
-            JSON.stringify(partides, null, 4),
-            'utf8'
-        );
-        console.log('✅ Partides de Chuecos guardades correctament');
+
+        // Eliminar totes les partides existents
+        await supabase.from('partides_chuecos').delete().neq('id', 0);
+
+        // Inserir les noves partides
+        const { data, error } = await supabase
+            .from('partides_chuecos')
+            .insert(partides);
+
+        if (error) throw error;
+
+        console.log('✅ Partides de Chuecos guardades correctament:', partides.length);
         res.json({ success: true, message: 'Partides guardades correctament' });
     } catch (error) {
-        console.error('Error guardant partides_chuecos_updated.json:', error);
-        res.status(500).json({ error: 'Error guardant les dades' });
+        console.error('❌ Error guardant partides de Chuecos:', error);
+        res.status(500).json({ error: 'Error guardant les dades', details: error.message });
     }
 });
 
