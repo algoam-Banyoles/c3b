@@ -604,8 +604,10 @@
                                 <th>Data</th>
                                 <th>Oponent</th>
                                 <th>C</th>
+                                <th>C.Op</th>
                                 <th>E</th>
                                 <th>Mitjana</th>
+                                <th>Resultat</th>
                                 <th>Accions</th>
                             </tr>
                         </thead>
@@ -1717,7 +1719,7 @@ PARTIDES_DATA = [...INITIAL_DATA];
             const tbody = document.getElementById('partidesTableBody');
             
             if (PARTIDES_DATA.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #999;">No hi ha partides. Afegeix la primera! ➕</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px; color: #999;">No hi ha partides. Afegeix la primera! ➕</td></tr>';
                 return;
             }
             
