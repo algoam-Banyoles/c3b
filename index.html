@@ -1233,13 +1233,16 @@
         let currentRange = { start: 0, end: 15 }; // S'actualitzarà dinàmicament a init()
         let editingIndex = -1;
         
-        // LocalStorage keys
+        // API endpoint
+        const API_URL = '/api/partides/gomez';
+        
+        // LocalStorage keys (com a backup)
         const STORAGE_KEY = 'billar_partides_data';
         const STORAGE_VERSION = '1.0';
         
         // Inicialitzar l'aplicació
-        function init() {
-            carregarDades();
+        async function init() {
+            await carregarDades();
 
             console.log('INIT - Total partides:', PARTIDES_DATA.length);
 
@@ -1273,56 +1276,68 @@
             */
         }
         
-        // Gestió de dades amb localStorage
-        function carregarDades() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    const savedPartides = data.partides || [];
-                    
-                    // Comparar amb dades inicials: si INITIAL_DATA té més partides o és diferent, actualitzar
-                    if (INITIAL_DATA.length > savedPartides.length) {
-                        console.log('Actualitzant amb dades més noves:', INITIAL_DATA.length, 'vs', savedPartides.length);
-                        PARTIDES_DATA = [...INITIAL_DATA];
-                        guardarDadesStorage();
-                    } else if (INITIAL_DATA.length === savedPartides.length) {
-                        // Verificar si les dades són diferents
-                        const lastInitial = INITIAL_DATA[INITIAL_DATA.length - 1];
-                        const lastSaved = savedPartides[savedPartides.length - 1];
-                        if (JSON.stringify(lastInitial) !== JSON.stringify(lastSaved)) {
-                            console.log('Actualitzant dades modificades');
-                            PARTIDES_DATA = [...INITIAL_DATA];
-                            guardarDadesStorage();
-                        } else {
-                            PARTIDES_DATA = savedPartides;
-                            console.log('Dades carregades des de localStorage:', PARTIDES_DATA.length, 'partides');
-                        }
-                    } else {
-                        // L'usuari ha afegit més partides, mantenir les seves
-                        PARTIDES_DATA = savedPartides;
-                        console.log('Dades de l\'usuari carregades:', PARTIDES_DATA.length, 'partides');
-                    }
-                } catch (e) {
-                    console.error('Error carregant dades:', e);
-                    PARTIDES_DATA = [...INITIAL_DATA];
-                    guardarDadesStorage();
-                }
-            } else {
-                // Primera vegada: carregar dades inicials
-                PARTIDES_DATA = [...INITIAL_DATA];
+        // Gestió de dades amb API del servidor
+        async function carregarDades() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Error carregant dades del servidor');
+                
+                PARTIDES_DATA = await response.json();
+                console.log('✅ Dades carregades des del servidor:', PARTIDES_DATA.length, 'partides');
+                
+                // Guardar còpia local com a backup
                 guardarDadesStorage();
+            } catch (error) {
+                console.error('❌ Error carregant des del servidor:', error);
+                console.log('Intentant carregar des de localStorage...');
+                
+                // Fallback a localStorage
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        PARTIDES_DATA = data.partides || [];
+                        console.log('⚠️ Dades carregades des de localStorage (backup):', PARTIDES_DATA.length, 'partides');
+                    } catch (e) {
+                        console.error('Error carregant des de localStorage:', e);
+                        PARTIDES_DATA = [...INITIAL_DATA];
+                    }
+                } else {
+                    // Si no hi ha res, carregar dades inicials
+                    PARTIDES_DATA = [...INITIAL_DATA];
+                    console.log('Dades inicials carregades:', PARTIDES_DATA.length, 'partides');
+                }
             }
         }
         
-        function guardarDadesStorage() {
+        async function guardarDadesStorage() {
+            // Guardar al servidor
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(PARTIDES_DATA)
+                });
+                
+                if (!response.ok) throw new Error('Error guardant al servidor');
+                
+                const result = await response.json();
+                console.log('✅ Dades guardades al servidor:', PARTIDES_DATA.length, 'partides');
+            } catch (error) {
+                console.error('❌ Error guardant al servidor:', error);
+                alert('⚠️ No s\'han pogut guardar les dades al servidor. Assegura\'t que el servidor està funcionant.');
+            }
+            
+            // També guardar còpia local com a backup
             const data = {
                 version: STORAGE_VERSION,
                 lastUpdate: new Date().toISOString(),
                 partides: PARTIDES_DATA
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            console.log('Dades guardades:', PARTIDES_DATA.length, 'partides');
+            console.log('💾 Còpia local guardada (backup)');
         }
         
         function exportarDades() {
@@ -1430,7 +1445,7 @@
             editingIndex = -1;
         }
         
-        function guardarPartida(event) {
+        async function guardarPartida(event) {
             event.preventDefault();
             
             const caramboles = parseInt(document.getElementById('formCaramboles').value);
@@ -1463,18 +1478,18 @@
             // Reordenar per número de partida
             PARTIDES_DATA.sort((a, b) => a.num - b.num);
             
-            guardarDadesStorage();
+            await guardarDadesStorage();
             refreshAll();
             closeModal();
             
             alert(editingIndex >= 0 ? '✅ Partida actualitzada!' : '✅ Partida afegida!');
         }
         
-        function eliminarPartida(index) {
+        async function eliminarPartida(index) {
             const partida = PARTIDES_DATA[index];
             if (confirm(`Segur que vols eliminar la partida #${partida.num} contra ${partida.oponent}?`)) {
                 PARTIDES_DATA.splice(index, 1);
-                guardarDadesStorage();
+                await guardarDadesStorage();
                 refreshAll();
                 alert('✅ Partida eliminada!');
             }

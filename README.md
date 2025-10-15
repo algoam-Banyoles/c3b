@@ -7,7 +7,114 @@ Aplicació web per gestionar i visualitzar estadístiques de partides de billar 
 ## 📁 Estructura del Projecte
 
 ```
+# 🎱 Estadístiques de Billar C3B
+
+Aplicació web per gestionar i visualitzar estadístiques de partides de billar amb sincronització automàtica.
+
+## ✨ Característiques
+
+- 📊 Visualització d'estadístiques en temps real
+- 📈 Gràfics d'evolució de la mitjana
+- 🎯 Simulador de mitjana
+- 💾 **Guardada automàtica als fitxers JSON**
+- 🔄 **Sincronització automàtica entre dispositius**
+- 📱 Disseny responsive (mòbil, tablet, desktop)
+- 🗂️ Gestió completa de partides (crear, editar, eliminar)
+
+## 🚀 Instal·lació i ús
+
+### 1. Instal·lar dependències
+
+```bash
+npm install
+```
+
+### 2. Iniciar el servidor
+
+```bash
+npm start
+```
+
+El servidor s'iniciarà a `http://localhost:3000`
+
+### 3. Obrir l'aplicació
+
+- **Pàgina de Gómez**: http://localhost:3000
+- **Pàgina de Chuecos**: http://localhost:3000/chuecos.html
+
+## 💾 Com funciona la sincronització
+
+1. **Quan edites una partida**: Les dades es guarden automàticament al fitxer JSON corresponent (`partides_gomez_updated.json` o `partides_chuecos_updated.json`)
+
+2. **Quan obres l'aplicació en un altre dispositiu**: Si tens els fitxers JSON sincronitzats (per exemple, amb Git, Dropbox, o compartint la carpeta), veuràs automàticament les últimes dades
+
+3. **Backup local**: L'aplicació també guarda una còpia al localStorage del navegador com a backup per si el servidor no està disponible
+
+## 🌐 Accés des d'altres dispositius a la mateixa xarxa
+
+Si vols accedir des del mòbil o tablet a la mateixa xarxa WiFi:
+
+1. Troba la IP del teu ordinador:
+   ```bash
+   ipconfig
+   ```
+   (Busca "IPv4 Address" de la teva connexió WiFi, exemple: 192.168.1.100)
+
+2. Des del mòbil/tablet obre:
+   ```
+   http://192.168.1.100:3000
+   ```
+
+## 📁 Estructura de fitxers
+
+```
 c3b/
+├── index.html                      # Pàgina de Gómez
+├── chuecos.html                    # Pàgina de Chuecos
+├── partides_gomez_updated.json     # Dades de Gómez
+├── partides_chuecos_updated.json   # Dades de Chuecos
+├── server.js                       # Servidor Node.js
+├── package.json                    # Configuració del projecte
+└── README.md                       # Aquest fitxer
+```
+
+## 🛠️ Scripts disponibles
+
+- `npm start` o `npm run dev`: Inicia el servidor
+- `Ctrl+C`: Atura el servidor
+
+## 📝 Notes importants
+
+- **Els fitxers JSON s'actualitzen automàticament** quan edites, afegeixes o elimines partides
+- Per sincronitzar entre dispositius diferents, comparteix la carpeta del projecte (Git, Dropbox, etc.)
+- El servidor ha d'estar funcionant per poder guardar canvis als JSON
+- Si el servidor no està disponible, l'aplicació utilitzarà el localStorage com a fallback
+
+## 🐛 Solució de problemes
+
+### El servidor no s'inicia
+```bash
+# Assegura't que el port 3000 no està en ús
+# O canvia el port a server.js (línia 6: const PORT = 3000;)
+```
+
+### No es guarden els canvis
+- Comprova que el servidor està funcionant
+- Mira la consola del navegador per errors
+- Verifica que tens permisos d'escriptura als fitxers JSON
+
+### Error carregant dades
+- El servidor carregarà les dades dels JSON la primera vegada
+- Si els JSON no existeixen, assegura't que els tens a la carpeta
+
+## 📄 Llicència
+
+MIT
+
+---
+
+Creat amb ❤️ per a C3B Banyoles
+
 ├── index.html                          # App principal (Albert Gómez)
 ├── chuecos.html                        # App personalitzada (Chuecos)
 ├── sw.js                               # Service Worker (PWA + Cache)
