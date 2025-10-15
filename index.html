@@ -1498,22 +1498,31 @@
             const labels = partides.map(p => `P${p.num}`);
             const mitjanes = partides.map(p => p.mitjana);
             
-            // Calcular mitjana de les últimes 15 partides per cada punt
-            // Només es mostra a partir de la partida 15 (quan ja hi ha 15 partides completes)
+            // Calcular mitjana acumulada progressiva (rolling average)
+            // P1: només P1
+            // P2: P1+P2
+            // ...
+            // P15: P1 a P15
+            // P16: P2 a P16 (últimes 15)
+            // P17: P3 a P17 (últimes 15)
             const mitjanaAcumulada = partides.map((p, idx) => {
                 const partidaNum = start + idx; // Índex real a PARTIDES_DATA
                 
-                // Abans de la partida 15, no mostrar res (serà null)
+                let startIdx, endIdx;
+                
                 if (partidaNum < 14) {
-                    return null;
+                    // Partides 1-14: mitjana des de l'inici fins l'actual
+                    startIdx = 0;
+                    endIdx = partidaNum + 1;
+                } else {
+                    // Partida 15 en endavant: mitjana de les últimes 15
+                    startIdx = partidaNum - 14; // 14 partides anteriors + l'actual = 15 total
+                    endIdx = partidaNum + 1;
                 }
                 
-                // A partir de la partida 15, calcular mitjana de les últimes 15
-                const startIdx = partidaNum - 14; // Últimes 15 partides (inclosa l'actual)
-                const endIdx = partidaNum + 1;
-                const ultimes15 = PARTIDES_DATA.slice(startIdx, endIdx);
-                const totalCar = ultimes15.reduce((sum, part) => sum + part.caramboles, 0);
-                const totalEnt = ultimes15.reduce((sum, part) => sum + part.entrades, 0);
+                const partidesCalc = PARTIDES_DATA.slice(startIdx, endIdx);
+                const totalCar = partidesCalc.reduce((sum, part) => sum + part.caramboles, 0);
+                const totalEnt = partidesCalc.reduce((sum, part) => sum + part.entrades, 0);
                 return totalCar / totalEnt;
             });
             
@@ -1539,15 +1548,14 @@
                             pointHoverRadius: 6
                         },
                         {
-                            label: 'Mitjana Últimes 15 Partides',
+                            label: 'Mitjana Acumulada (últimes 15)',
                             data: mitjanaAcumulada,
                             borderColor: '#667eea',
                             backgroundColor: 'rgba(102, 126, 234, 0.1)',
                             borderWidth: 3,
                             tension: 0.3,
                             pointRadius: 4,
-                            pointHoverRadius: 6,
-                            spanGaps: false // No connectar quan hi ha nulls
+                            pointHoverRadius: 6
                         }
                     ]
                 },
@@ -1576,10 +1584,14 @@
                                     if (context.datasetIndex === 0) {
                                         return `Partida: ${partida.caramboles}/${partida.entrades} = ${partida.mitjana.toFixed(3)}`;
                                     } else {
-                                        if (context.parsed.y === null) {
-                                            return 'Mitjana últimes 15: Encara no disponible';
+                                        if (partidaNum < 14) {
+                                            const numPartides = partidaNum + 1;
+                                            return `Mitjana acumulada (P1-P${numPartides}): ${context.parsed.y.toFixed(3)}`;
+                                        } else {
+                                            const startP = partidaNum - 13; // 14 partides enrere + 1
+                                            const endP = partidaNum + 1;
+                                            return `Mitjana últimes 15 (P${startP}-P${endP}): ${context.parsed.y.toFixed(3)}`;
                                         }
-                                        return `Mitjana últimes 15 partides: ${context.parsed.y.toFixed(3)}`;
                                     }
                                 }
                             }
