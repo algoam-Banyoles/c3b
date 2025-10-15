@@ -1460,17 +1460,17 @@
             
             document.querySelector('.range-selector').style.display = 'block';
             const slider = document.getElementById('rangeSlider');
-            const maxRange = PARTIDES_DATA.length - 14;
+            const maxRange = PARTIDES_DATA.length - 14; // Màxim valor per tenir sempre 15 partides visibles
             slider.max = maxRange;
-            slider.value = maxRange;
+            slider.value = maxRange; // Començar mostrant les últimes 15
             
             slider.oninput = function() {
                 const startIdx = parseInt(this.value) - 1;
                 const endIdx = startIdx + 15;
                 currentRange = { start: startIdx, end: endIdx };
                 
-                document.getElementById('rangeStart').textContent = `Partida ${startIdx + 1}`;
-                document.getElementById('rangeEnd').textContent = `Partida ${endIdx}`;
+                document.getElementById('rangeStart').textContent = `Partida ${PARTIDES_DATA[startIdx].num}`;
+                document.getElementById('rangeEnd').textContent = `Partida ${PARTIDES_DATA[endIdx - 1].num}`;
                 
                 updateQuickStats(startIdx, endIdx);
                 updateChart(startIdx, endIdx);
@@ -1479,8 +1479,9 @@
             // Inicialitzar els labels
             const startIdx = maxRange - 1;
             const endIdx = startIdx + 15;
-            document.getElementById('rangeStart').textContent = `Partida ${startIdx + 1}`;
-            document.getElementById('rangeEnd').textContent = `Partida ${endIdx}`;
+            currentRange = { start: startIdx, end: endIdx };
+            document.getElementById('rangeStart').textContent = `Partida ${PARTIDES_DATA[startIdx].num}`;
+            document.getElementById('rangeEnd').textContent = `Partida ${PARTIDES_DATA[endIdx - 1].num}`;
         }
         
         // Actualitzar el gràfic
@@ -1493,19 +1494,16 @@
                 return;
             }
             
-            const partides = PARTIDES_DATA.slice(start, end);
+            // Agafar només les partides visibles
+            const partidesVisibles = PARTIDES_DATA.slice(start, end);
             
-            const labels = partides.map(p => `P${p.num}`);
-            const mitjanes = partides.map(p => p.mitjana);
+            // Les etiquetes han de ser sempre P1, P2, P3... segons el número real de partida
+            const labels = partidesVisibles.map(p => `P${p.num}`);
+            const mitjanes = partidesVisibles.map(p => p.mitjana);
             
-            // Calcular mitjana acumulada progressiva (rolling average)
-            // P1: només P1
-            // P2: P1+P2
-            // ...
-            // P15: P1 a P15
-            // P16: P2 a P16 (últimes 15)
-            // P17: P3 a P17 (últimes 15)
-            const mitjanaAcumulada = partides.map((p, idx) => {
+            // Calcular mitjana acumulada progressiva per cada partida visible
+            // Però el càlcul es fa sobre TOTES les partides (fins aquell punt)
+            const mitjanaAcumulada = partidesVisibles.map((p, idx) => {
                 const partidaNum = start + idx; // Índex real a PARTIDES_DATA
                 
                 let startIdx, endIdx;
@@ -1578,7 +1576,7 @@
                             callbacks: {
                                 label: function(context) {
                                     const idx = context.dataIndex;
-                                    const partida = partides[idx];
+                                    const partida = partidesVisibles[idx];
                                     const partidaNum = start + idx;
                                     
                                     if (context.datasetIndex === 0) {
