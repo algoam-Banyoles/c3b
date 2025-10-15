@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Estadístiques Billar - Albert Gómez</title>
+    <title>Estadístiques Billar - Chuecos</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -533,10 +533,9 @@
     <div class="container">
         <div class="header">
             <h1>🎱 Estadístiques de Billar</h1>
-            <div style="text-align: center; color: #666; margin-top: 5px;">Albert Gómez</div>
+            <div style="text-align: center; color: #666; margin-top: 5px;">Chuecos</div>
             <div class="stats-summary" id="globalStats"></div>
-        </div>
-        
+        </div>        
         <div class="tabs">
             <button class="tab active" onclick="switchTab('evolution')">📊 Evolució</button>
             <button class="tab" onclick="switchTab('simulator')">🎯 Simulador</button>
@@ -726,423 +725,498 @@
         const INITIAL_DATA = [
   {
     "num": 1,
-    "data": "2024-04-12",
-    "lloc": "Sants",
-    "oponent": "Albert Garcia",
-    "equip": "C. B. Banyoles",
-    "caramboles": 30,
-    "caramboles_oponent": 12,
-    "entrades": 41,
-    "mitjana": 0.7317073170731707,
-    "mitjana_oponent": 0.2926829268292683
+    "tipus": "OPEN LLINARS",
+    "data": "2024-08-30",
+    "lloc": "LLINARS",
+    "oponent": "Alejandro López",
+    "equip": "Sant Boi",
+    "caramboles": 24,
+    "caramboles_oponent": 30,
+    "entrades": 48,
+    "mitjana": 0.5,
+    "serie_major": 7,
+    "punts": 0,
+    "punts_total": "0/2"
   },
   {
     "num": 2,
-    "data": "2024-04-12",
-    "lloc": "Sants",
-    "oponent": "Jose Luis Quesada",
-    "equip": "C. B. Sant Boi",
-    "caramboles": 26,
+    "tipus": "OPEN LLINARS",
+    "data": "2024-08-30",
+    "lloc": "LLINARS",
+    "oponent": "José L. Quesada ",
+    "equip": "Sant Boi",
+    "caramboles": 18,
     "caramboles_oponent": 30,
-    "entrades": 40,
-    "mitjana": 0.65,
-    "mitjana_oponent": 0.75
+    "entrades": 48,
+    "mitjana": 0.375,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "0/4"
   },
   {
     "num": 3,
-    "data": "2024-06-08",
-    "lloc": "Granollers",
-    "oponent": "Pablo Cuevas",
-    "equip": "C. B. Granollers",
-    "caramboles": 30,
-    "caramboles_oponent": 23,
-    "entrades": 37,
-    "mitjana": 0.8108108108108109,
-    "mitjana_oponent": 0.6216216216216216
+    "tipus": "LLIGA",
+    "data": "2024-09-28",
+    "lloc": "SANTS",
+    "oponent": "José A. Yubero",
+    "equip": "Coral Colón",
+    "caramboles": 15,
+    "caramboles_oponent": 17,
+    "entrades": 50,
+    "mitjana": 0.3,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "0/6"
   },
   {
     "num": 4,
-    "data": "2024-06-08",
-    "lloc": "Granollers",
-    "oponent": "Joan Carles Taza",
-    "equip": "C. B. Lliçà",
-    "caramboles": 17,
-    "caramboles_oponent": 30,
-    "entrades": 50,
-    "mitjana": 0.34,
-    "mitjana_oponent": 0.6
+    "tipus": "INDIVIDUAL",
+    "data": "2024-10-19",
+    "lloc": "MONFORTE",
+    "oponent": "Bibiano Román",
+    "equip": "Mollet",
+    "caramboles": 20,
+    "caramboles_oponent": 17,
+    "entrades": 49,
+    "mitjana": 0.408,
+    "serie_major": 2,
+    "punts": 2,
+    "punts_total": "2/8"
   },
   {
     "num": 5,
-    "data": "2024-06-15",
-    "lloc": "Banyoles",
-    "oponent": "Joan Carles Taza",
-    "equip": "C. B. Lliçà",
-    "caramboles": 9,
-    "caramboles_oponent": 30,
-    "entrades": 34,
-    "mitjana": 0.2647058823529412,
-    "mitjana_oponent": 0.8823529411764706
+    "tipus": "INDIVIDUAL",
+    "data": "2024-10-19",
+    "lloc": "MONFORTE",
+    "oponent": "Jorge Tormo",
+    "equip": "Monforte",
+    "caramboles": 12,
+    "caramboles_oponent": 20,
+    "entrades": 22,
+    "mitjana": 0.545,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "2/10"
   },
   {
     "num": 6,
-    "data": "2024-06-15",
-    "lloc": "Banyoles",
-    "oponent": "Josep Lluis Majua",
-    "equip": "C. B. Canet",
-    "caramboles": 15,
-    "caramboles_oponent": 30,
-    "entrades": 43,
-    "mitjana": 0.3488372093023256,
-    "mitjana_oponent": 0.6976744186046512
+    "tipus": "LLIGA",
+    "data": "2024-10-26",
+    "lloc": "VILANOVA",
+    "oponent": "Laureà Giménez",
+    "equip": "Vilanova",
+    "caramboles": 17,
+    "caramboles_oponent": 25,
+    "entrades": 41,
+    "mitjana": 0.415,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "2/12"
   },
   {
     "num": 7,
-    "data": "2024-07-13",
-    "lloc": "Mataró",
-    "oponent": "Eva Hermida",
-    "equip": "C. B. Manresa",
-    "caramboles": 29,
-    "caramboles_oponent": 14,
-    "entrades": 50,
-    "mitjana": 0.58,
-    "mitjana_oponent": 0.28
+    "tipus": "INDIVIDUAL",
+    "data": "2024-11-02",
+    "lloc": "SANT BOI",
+    "oponent": "Javier Roca",
+    "equip": "Vic",
+    "caramboles": 19,
+    "caramboles_oponent": 20,
+    "entrades": 40,
+    "mitjana": 0.475,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "2/14"
   },
   {
     "num": 8,
-    "data": "2024-07-13",
-    "lloc": "Mataró",
-    "oponent": "Eva Hermida",
-    "equip": "C. B. Manresa",
-    "caramboles": 25,
-    "caramboles_oponent": 12,
+    "tipus": "INDIVIDUAL",
+    "data": "2024-11-02",
+    "lloc": "SANT BOI",
+    "oponent": "Matías Mingo",
+    "equip": "Esplugues",
+    "caramboles": 20,
+    "caramboles_oponent": 16,
     "entrades": 50,
-    "mitjana": 0.5,
-    "mitjana_oponent": 0.24
+    "mitjana": 0.4,
+    "serie_major": 3,
+    "punts": 2,
+    "punts_total": "4/16"
   },
   {
     "num": 9,
-    "data": "2024-07-20",
-    "lloc": "Mataró",
-    "oponent": "Josep Lluis Majua",
-    "equip": "C.B. Cerdanyola",
-    "caramboles": 18,
-    "caramboles_oponent": 30,
-    "entrades": 44,
-    "mitjana": 0.4090909090909091,
-    "mitjana_oponent": 0.6818181818181818
+    "tipus": "OPEN SANT ADRIÀ",
+    "data": "2024-11-23",
+    "lloc": "SANT ADRIÀ",
+    "oponent": "Bibiano Román",
+    "equip": "Mollet",
+    "caramboles": 30,
+    "caramboles_oponent": 13,
+    "entrades": 45,
+    "mitjana": 0.666,
+    "serie_major": 6,
+    "punts": 2,
+    "punts_total": "6/18"
   },
   {
     "num": 10,
-    "data": "2024-07-20",
-    "lloc": "Mataró",
-    "oponent": "Fernando Corpas ",
-    "equip": "S.B. Molins",
-    "caramboles": 25,
-    "caramboles_oponent": 30,
-    "entrades": 47,
-    "mitjana": 0.5319148936170213,
-    "mitjana_oponent": 0.6382978723404256
+    "tipus": "OPEN SANT ADRIÀ",
+    "data": "2024-11-23",
+    "lloc": "SANT ADRIÀ",
+    "oponent": "Josep Martín",
+    "equip": "Llinars",
+    "caramboles": 24,
+    "caramboles_oponent": 21,
+    "entrades": 50,
+    "mitjana": 0.48,
+    "serie_major": 5,
+    "punts": 2,
+    "punts_total": "8/20"
   },
   {
     "num": 11,
-    "data": "2024-10-05",
-    "lloc": "Lliçà",
-    "oponent": "Antonio Limones",
-    "equip": "C. B. Lliçà",
-    "caramboles": 16,
-    "caramboles_oponent": 23,
-    "entrades": 50,
-    "mitjana": 0.32,
-    "mitjana_oponent": 0.46
+    "tipus": "OPEN SANT ADRIÀ",
+    "data": "2024-12-01",
+    "lloc": "SANT ADRIÀ",
+    "oponent": "Rosendo Moya",
+    "equip": "Canet",
+    "caramboles": 30,
+    "caramboles_oponent": 25,
+    "entrades": 45,
+    "mitjana": 0.666,
+    "serie_major": 3,
+    "punts": 2,
+    "punts_total": "10/22"
   },
   {
     "num": 12,
-    "data": "2024-11-09",
-    "lloc": "Banyoles",
-    "oponent": "Manel Fontes",
-    "equip": "C. B. Sant Boi",
-    "caramboles": 13,
-    "caramboles_oponent": 17,
-    "entrades": 50,
-    "mitjana": 0.26,
-    "mitjana_oponent": 0.34
+    "tipus": "OPEN SANT ADRIÀ",
+    "data": "2024-12-01",
+    "lloc": "SANT ADRIÀ",
+    "oponent": "César Mas",
+    "equip": "Mollet",
+    "caramboles": 7,
+    "caramboles_oponent": 30,
+    "entrades": 21,
+    "mitjana": 0.333,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "10/24"
   },
   {
     "num": 13,
-    "data": "2024-11-23",
-    "lloc": "Sant Adrià",
-    "oponent": "Max Jiménez",
-    "equip": "C. B. Sant Adrià",
-    "caramboles": 28,
-    "caramboles_oponent": 16,
+    "tipus": "LLIGA",
+    "data": "2024-12-21",
+    "lloc": "MONTROIG",
+    "oponent": "José M. Pérez",
+    "equip": "Montroig",
+    "caramboles": 20,
+    "caramboles_oponent": 15,
     "entrades": 50,
-    "mitjana": 0.56,
-    "mitjana_oponent": 0.32
+    "mitjana": 0.4,
+    "serie_major": 3,
+    "punts": 2,
+    "punts_total": "12/26"
   },
   {
     "num": 14,
-    "data": "2024-11-23",
-    "lloc": "Sant Adrià",
-    "oponent": "Antonio Montes ",
-    "equip": "C. B. Sant Adrià",
-    "caramboles": 17,
-    "caramboles_oponent": 30,
-    "entrades": 47,
-    "mitjana": 0.3617021276595745,
-    "mitjana_oponent": 0.6382978723404256
+    "tipus": "OPEN LLINARS 600",
+    "data": "2024-12-27",
+    "lloc": "LLINARS",
+    "oponent": "Emilio Justicia",
+    "equip": "Llinars",
+    "caramboles": 25,
+    "caramboles_oponent": 11,
+    "entrades": 50,
+    "mitjana": 0.5,
+    "serie_major": 3,
+    "punts": 2,
+    "punts_total": "14/28"
   },
   {
     "num": 15,
-    "data": "2024-11-23",
-    "lloc": "Blanes",
-    "oponent": "Serafin Martínez",
-    "equip": "C. B. Blanes",
-    "caramboles": 26,
-    "caramboles_oponent": 25,
+    "tipus": "OPEN LLINARS 600",
+    "data": "2024-12-27",
+    "lloc": "LLINARS",
+    "oponent": "José Mª Gálvez",
+    "equip": "Canet",
+    "caramboles": 24,
+    "caramboles_oponent": 24,
     "entrades": 50,
-    "mitjana": 0.52,
-    "mitjana_oponent": 0.5
+    "mitjana": 0.48,
+    "serie_major": 3,
+    "punts": 1,
+    "punts_total": "15/30"
   },
   {
     "num": 16,
-    "data": "2024-12-14",
-    "lloc": "Banyoles",
-    "oponent": "Albert Gil",
-    "equip": "C.B. Monforte",
-    "caramboles": 16,
+    "tipus": "OPEN LLINARS 600",
+    "data": "2024-12-29",
+    "lloc": "LLINARS",
+    "oponent": "Josep Ll. Majua",
+    "equip": "Cerdanyola",
+    "caramboles": 12,
     "caramboles_oponent": 30,
-    "entrades": 41,
-    "mitjana": 0.3902439024390244,
-    "mitjana_oponent": 0.7317073170731707
+    "entrades": 50,
+    "mitjana": 0.24,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "15/30"
   },
   {
     "num": 17,
-    "data": "2024-12-21",
-    "lloc": "Banyoles",
-    "oponent": "Francisco Vílchez",
-    "equip": "Coral Colon",
-    "caramboles": 20,
-    "caramboles_oponent": 24,
-    "entrades": 50,
-    "mitjana": 0.4,
-    "mitjana_oponent": 0.48
+    "tipus": "LLIGA",
+    "data": "2025-01-11",
+    "lloc": "SANT FELIU",
+    "oponent": "Pablo Moreno",
+    "equip": "Unió Coral",
+    "caramboles": 25,
+    "caramboles_oponent": 12,
+    "entrades": 47,
+    "mitjana": 0.532,
+    "serie_major": 3,
+    "punts": 2,
+    "punts_total": "17/30"
   },
   {
     "num": 18,
-    "data": "2025-01-11",
-    "lloc": "Mataró",
-    "oponent": "Rafael Salazar",
-    "equip": "C.B Mataró",
-    "caramboles": 30,
-    "caramboles_oponent": 24,
-    "entrades": 48,
-    "mitjana": 0.625,
-    "mitjana_oponent": 0.5
+    "tipus": "LLIGA",
+    "data": "2025-02-08",
+    "lloc": "SANTS",
+    "oponent": "Jesús Íñiguez",
+    "equip": "Vilanova",
+    "caramboles": 16,
+    "caramboles_oponent": 19,
+    "entrades": 50,
+    "mitjana": 0.32,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "17/30"
   },
   {
     "num": 19,
-    "data": "2025-01-18",
-    "lloc": "Banyoles",
-    "oponent": "Jose Antonio Gavilan",
-    "equip": "C. B. Lliçà",
-    "caramboles": 30,
-    "caramboles_oponent": 23,
-    "entrades": 46,
-    "mitjana": 0.6521739130434783,
-    "mitjana_oponent": 0.5
+    "tipus": "LLIGA",
+    "data": "2025-02-22",
+    "lloc": "LLINARS",
+    "oponent": "Jordi Clapés",
+    "equip": "Llinars",
+    "caramboles": 22,
+    "caramboles_oponent": 25,
+    "entrades": 40,
+    "mitjana": 0.55,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "15/30"
   },
   {
     "num": 20,
-    "data": "2025-02-01",
-    "lloc": "Premià",
-    "oponent": "Felicià Marin",
-    "equip": "C. B. Premià",
-    "caramboles": 18,
-    "caramboles_oponent": 30,
-    "entrades": 42,
-    "mitjana": 0.42857142857142855,
-    "mitjana_oponent": 0.7142857142857143
+    "tipus": "LLIGA",
+    "data": "2025-03-01",
+    "lloc": "SANTS",
+    "oponent": "Juan Cordón",
+    "equip": "Cardona",
+    "caramboles": 21,
+    "caramboles_oponent": 25,
+    "entrades": 48,
+    "mitjana": 0.438,
+    "serie_major": 4,
+    "punts": 0,
+    "punts_total": "15/30"
   },
   {
     "num": 21,
-    "data": "2025-02-21",
-    "lloc": "Sant Boi",
-    "oponent": "Jose Luis Quesada",
-    "equip": "C. B. Sant Boi",
-    "caramboles": 21,
-    "caramboles_oponent": 30,
-    "entrades": 46,
-    "mitjana": 0.45652173913043476,
-    "mitjana_oponent": 0.6521739130434783
+    "tipus": "LLIGA",
+    "data": "2025-03-22",
+    "lloc": "LLINARS",
+    "oponent": "Francisco Martin",
+    "equip": "Llinars",
+    "caramboles": 22,
+    "caramboles_oponent": 25,
+    "entrades": 48,
+    "mitjana": 0.458,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "15/30"
   },
   {
     "num": 22,
-    "data": "2025-03-01",
-    "lloc": "Banyoles",
-    "oponent": "Francisco Rodríguez",
-    "equip": "C. B. Blanes",
-    "caramboles": 21,
-    "caramboles_oponent": 30,
-    "entrades": 43,
-    "mitjana": 0.4883720930232558,
-    "mitjana_oponent": 0.6976744186046512
+    "tipus": "OPEN MANRESA",
+    "data": "2025-03-23",
+    "lloc": "MANRESA",
+    "oponent": "Jordi Serrano",
+    "equip": "Casal Cervera",
+    "caramboles": 23,
+    "caramboles_oponent": 26,
+    "entrades": 50,
+    "mitjana": 0.46,
+    "serie_major": 4,
+    "punts": 0,
+    "punts_total": "15/30"
   },
   {
     "num": 23,
-    "data": "2025-03-15",
-    "lloc": "Monforte",
-    "oponent": "Jordi Oliver",
-    "equip": "C.B. Monforte",
-    "caramboles": 21,
-    "caramboles_oponent": 30,
-    "entrades": 45,
-    "mitjana": 0.4666666666666667,
-    "mitjana_oponent": 0.6666666666666666
+    "tipus": "OPEN MANRESA",
+    "data": "2025-03-23",
+    "lloc": "MANRESA",
+    "oponent": "Juan Cordón",
+    "equip": "Cardona",
+    "caramboles": 30,
+    "caramboles_oponent": 12,
+    "entrades": 50,
+    "mitjana": 0.6,
+    "serie_major": 4,
+    "punts": 2,
+    "punts_total": "15/30"
   },
   {
     "num": 24,
+    "tipus": "LLIGA",
     "data": "2025-04-05",
-    "lloc": "Coral Colon",
-    "oponent": "Yuri Trullás",
-    "equip": "Coral Colon",
-    "caramboles": 30,
-    "caramboles_oponent": 18,
-    "entrades": 42,
-    "mitjana": 0.7142857142857143,
-    "mitjana_oponent": 0.42857142857142855
+    "lloc": "SANTS",
+    "oponent": "Ignacio Moruno",
+    "equip": "Montroig",
+    "caramboles": 19,
+    "caramboles_oponent": 21,
+    "entrades": 50,
+    "mitjana": 0.38,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "13/30"
   },
   {
     "num": 25,
-    "data": "2025-04-11",
-    "lloc": "Banyoles",
-    "oponent": "Salvador Bort",
-    "equip": "C.B Mataró",
-    "caramboles": 26,
-    "caramboles_oponent": 30,
-    "entrades": 42,
-    "mitjana": 0.6190476190476191,
-    "mitjana_oponent": 0.7142857142857143
+    "tipus": "LLIGA",
+    "data": "2025-04-12",
+    "lloc": "SANTS",
+    "oponent": "José Pretel",
+    "equip": "Unió Coral",
+    "caramboles": 25,
+    "caramboles_oponent": 18,
+    "entrades": 46,
+    "mitjana": 0.543,
+    "serie_major": 4,
+    "punts": 2,
+    "punts_total": "13/30"
   },
   {
     "num": 26,
+    "tipus": "OPEN SANTS",
     "data": "2025-05-17",
-    "lloc": "Sants",
-    "oponent": "Carmelo Garcia",
-    "equip": "C.B. Sants",
+    "lloc": "SANTS",
+    "oponent": "Juan Cordón",
+    "equip": "Cardona",
     "caramboles": 30,
-    "caramboles_oponent": 20,
-    "entrades": 44,
-    "mitjana": 0.6818181818181818,
-    "mitjana_oponent": 0.45454545454545453
+    "caramboles_oponent": 12,
+    "entrades": 38,
+    "mitjana": 0.789,
+    "serie_major": 4,
+    "punts": 2,
+    "punts_total": "13/30"
   },
   {
     "num": 27,
+    "tipus": "OPEN SANTS",
     "data": "2025-05-17",
-    "lloc": "Sants",
-    "oponent": "Hector Suarez",
-    "equip": "C. B. Sant Adrià",
-    "caramboles": 22,
+    "lloc": "SANTS",
+    "oponent": "Joan Bouterin",
+    "equip": "Mollet",
+    "caramboles": 11,
     "caramboles_oponent": 30,
-    "entrades": 45,
-    "mitjana": 0.4888888888888889,
-    "mitjana_oponent": 0.6666666666666666
+    "entrades": 30,
+    "mitjana": 0.367,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "13/30"
   },
   {
     "num": 28,
-    "data": "2025-06-07",
-    "lloc": "Unió Coral",
-    "oponent": "Cipriano Becerra",
-    "equip": "Unió Coral",
-    "caramboles": 17,
-    "caramboles_oponent": 20,
+    "tipus": "LLIGA",
+    "data": "2025-07-05",
+    "lloc": "BORGES",
+    "oponent": "Juan González",
+    "equip": "Borges",
+    "caramboles": 13,
+    "caramboles_oponent": 18,
     "entrades": 50,
-    "mitjana": 0.34,
-    "mitjana_oponent": 0.4
+    "mitjana": 0.26,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "11/30"
   },
   {
     "num": 29,
-    "data": "2025-06-07",
-    "lloc": "Unió Coral",
-    "oponent": "Antonio Saez",
-    "equip": "C. B. Manresa",
-    "caramboles": 30,
-    "caramboles_oponent": 20,
-    "entrades": 49,
-    "mitjana": 0.6122448979591837,
-    "mitjana_oponent": 0.40816326530612246
+    "tipus": "LLIGA",
+    "data": "2025-07-06",
+    "lloc": "SANTS",
+    "oponent": "Juan González",
+    "equip": "Borges",
+    "caramboles": 25,
+    "caramboles_oponent": 21,
+    "entrades": 30,
+    "mitjana": 0.833,
+    "serie_major": 3,
+    "punts": 2,
+    "punts_total": "11/30"
   },
   {
     "num": 30,
-    "data": "2025-07-12",
-    "lloc": "Mataró",
-    "oponent": "Joan Ralita",
-    "equip": "C. B. Banyoles",
-    "caramboles": 29,
-    "caramboles_oponent": 22,
+    "tipus": "OPEN MATARÓ",
+    "data": "2025-07-13",
+    "lloc": "MATARÓ",
+    "oponent": "Alberto Ortega",
+    "equip": "Molins",
+    "caramboles": 17,
+    "caramboles_oponent": 24,
     "entrades": 50,
-    "mitjana": 0.58,
-    "mitjana_oponent": 0.44
+    "mitjana": 0.34,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "10/30"
   },
   {
     "num": 31,
-    "data": "2025-07-12",
-    "lloc": "Mataró",
-    "oponent": "Dani Fernández",
-    "equip": "C.B. Sants",
-    "caramboles": 27,
-    "caramboles_oponent": 26,
+    "tipus": "OPEN MATARÓ",
+    "data": "2025-07-13",
+    "lloc": "MATARÓ",
+    "oponent": "Josep Ll. Majua",
+    "equip": "Cerdanyola",
+    "caramboles": 26,
+    "caramboles_oponent": 29,
     "entrades": 50,
-    "mitjana": 0.54,
-    "mitjana_oponent": 0.52
+    "mitjana": 0.52,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "10/30"
   },
   {
     "num": 32,
-    "data": "2025-07-19",
-    "lloc": "Mataró",
-    "oponent": "Pere Ribas",
-    "equip": "C.B Mataró",
-    "caramboles": 30,
-    "caramboles_oponent": 19,
-    "entrades": 44,
-    "mitjana": 0.6818181818181818,
-    "mitjana_oponent": 0.4318181818181818
+    "tipus": "LLIGA",
+    "data": "2025-09-27",
+    "lloc": "ESPLUGUES",
+    "oponent": "Pedro Romero",
+    "equip": "Esplugues",
+    "caramboles": 12,
+    "caramboles_oponent": 17,
+    "entrades": 50,
+    "mitjana": 0.24,
+    "serie_major": 2,
+    "punts": 0,
+    "punts_total": "8/30"
   },
   {
     "num": 33,
-    "data": "2025-07-19",
-    "lloc": "Mataró",
-    "oponent": "Ricardo García",
-    "equip": "C.B. Monforte",
-    "caramboles": 19,
-    "caramboles_oponent": 30,
-    "entrades": 33,
-    "mitjana": 0.5757575757575758,
-    "mitjana_oponent": 0.9090909090909091
-  },
-  {
-    "num": 34,
-    "data": "2025-09-27",
-    "lloc": "Banyoles",
-    "oponent": "Alejandro López",
-    "equip": "C. B. Sant Boi",
-    "caramboles": 23,
-    "caramboles_oponent": 30,
-    "entrades": 45,
-    "mitjana": 0.5111111111111111,
-    "mitjana_oponent": 0.6666666666666666
-  },
-  {
-    "num": 35,
-    "data": "2025-10-10",
-    "lloc": "Banyoles",
-    "oponent": "Jose Jiménez",
-    "equip": "C. B. Sant Adrià",
-    "caramboles": 30,
-    "caramboles_oponent": 21,
-    "entrades": 46,
-    "mitjana": 0.6521739130434783,
-    "mitjana_oponent": 0.45652173913043476
+    "tipus": "LLIGA",
+    "data": "2025-10-11",
+    "lloc": "GRANOLLERS",
+    "oponent": "Fernando Jiménez",
+    "equip": "Granollers",
+    "caramboles": 13,
+    "caramboles_oponent": 25,
+    "entrades": 36,
+    "mitjana": 0.361,
+    "serie_major": 3,
+    "punts": 0,
+    "punts_total": "8/30"
   }
 ];
         
@@ -1152,33 +1226,23 @@
         let editingIndex = -1;
         
         // LocalStorage keys
-        const STORAGE_KEY = 'billar_partides_data';
+        const STORAGE_KEY = 'billar_chuecos_partides_data';
         const STORAGE_VERSION = '1.0';
         
         // Inicialitzar l'aplicació
         function init() {
             carregarDades();
-
-            console.log('INIT - Total partides:', PARTIDES_DATA.length);
-
-            // Configurar el range inicial amb les últimes 15 partides
+// Configurar el range inicial amb les últimes 15 partides
             if (PARTIDES_DATA.length >= 15) {
                 currentRange.start = PARTIDES_DATA.length - 15;
                 currentRange.end = PARTIDES_DATA.length;
             }
-
-            console.log('INIT - currentRange després de configurar:', currentRange);
-
-            updateGlobalStats();
+updateGlobalStats();
             updateQuickStats(currentRange.start, currentRange.end);
             renderPartidesTable();
+setupRangeSlider();
 
-            console.log('INIT - Abans de setupRangeSlider, currentRange:', currentRange);
-            setupRangeSlider();
-
-            console.log('INIT - Després de setupRangeSlider, currentRange:', currentRange);
-            console.log('INIT - Cridant updateChart...');
-            updateChart();
+updateChart();
             updateManageStats();
             
             // Registrar Service Worker per PWA (comentat temporalment per debug)
@@ -1201,26 +1265,22 @@
                     
                     // Comparar amb dades inicials: si INITIAL_DATA té més partides o és diferent, actualitzar
                     if (INITIAL_DATA.length > savedPartides.length) {
-                        console.log('Actualitzant amb dades més noves:', INITIAL_DATA.length, 'vs', savedPartides.length);
-                        PARTIDES_DATA = [...INITIAL_DATA];
+PARTIDES_DATA = [...INITIAL_DATA];
                         guardarDadesStorage();
                     } else if (INITIAL_DATA.length === savedPartides.length) {
                         // Verificar si les dades són diferents
                         const lastInitial = INITIAL_DATA[INITIAL_DATA.length - 1];
                         const lastSaved = savedPartides[savedPartides.length - 1];
                         if (JSON.stringify(lastInitial) !== JSON.stringify(lastSaved)) {
-                            console.log('Actualitzant dades modificades');
-                            PARTIDES_DATA = [...INITIAL_DATA];
+PARTIDES_DATA = [...INITIAL_DATA];
                             guardarDadesStorage();
                         } else {
                             PARTIDES_DATA = savedPartides;
-                            console.log('Dades carregades des de localStorage:', PARTIDES_DATA.length, 'partides');
-                        }
+}
                     } else {
                         // L'usuari ha afegit més partides, mantenir les seves
                         PARTIDES_DATA = savedPartides;
-                        console.log('Dades de l\'usuari carregades:', PARTIDES_DATA.length, 'partides');
-                    }
+}
                 } catch (e) {
                     console.error('Error carregant dades:', e);
                     PARTIDES_DATA = [...INITIAL_DATA];
@@ -1240,8 +1300,7 @@
                 partides: PARTIDES_DATA
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            console.log('Dades guardades:', PARTIDES_DATA.length, 'partides');
-        }
+}
         
         function exportarDades() {
             const data = {
@@ -1551,13 +1610,8 @@
                 }
                 return;
             }
-
-            console.log('updateChart - currentRange:', currentRange);
-
             // Mostrar només les partides del rang seleccionat
             const partidesVisibles = PARTIDES_DATA.slice(currentRange.start, currentRange.end);
-
-            console.log('Partides visibles:', partidesVisibles.map(p => p.num));
             
             // Les etiquetes són sempre P1, P2, P3... per al rang seleccionat
             const labels = partidesVisibles.map(p => `P${p.num}`);

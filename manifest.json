@@ -1,0 +1,10 @@
+{
+  "name": "Estadístiques Billar",
+  "short_name": "Billar Stats",
+  "description": "Aplicació per gestionar estadístiques de billar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary"
+}
