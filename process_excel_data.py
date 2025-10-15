@@ -91,12 +91,16 @@ def process_chuecos_data(excel_file='BILLAR (1).xlsx'):
         data_val = row.get('Data')
         data = str(data_val)[:10] if pd.notna(data_val) else None
 
+        # Capturar competició (Camp "Billar" a l'Excel)
+        competicio = safe_str(row.get('Billar'), None)
+
         partida = {
             'num': idx + 1,
             'data': data,
             'lloc': safe_str(row.get('Lloc'), None),
             'oponent': safe_str(row.get('Contrincant')),
             'equip': safe_str(row.get('Club'), None),
+            'competicio': competicio,
             'caramboles': caramboles,
             'caramboles_oponent': caramboles_oponent,
             'entrades': entrades,
@@ -151,12 +155,16 @@ def process_gomez_data(excel_file='Partides.xlsx'):
         else:
             url_video = None
 
+        # Capturar competició (Camp "Campionat" a l'Excel)
+        competicio = safe_str(row.get('Campionat'), None)
+
         partida = {
             'num': idx + 1,
             'data': data,
             'lloc': lloc,
             'oponent': safe_str(row.get('Jugador 2')),
             'equip': safe_str(row.get('Equip'), None),
+            'competicio': competicio,
             'caramboles': caramboles,
             'caramboles_oponent': caramboles_oponent,
             'entrades': entrades,

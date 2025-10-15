@@ -69,6 +69,12 @@
             font-weight: bold;
         }
         
+        .stat-card .subvalue {
+            font-size: 14px;
+            opacity: 0.85;
+            margin-top: 5px;
+        }
+        
         .card {
             background: white;
             border-radius: 15px;
@@ -2413,6 +2419,53 @@ updateChart();
             updateManageStats();
         }
         
+        // Calcular punts d'una partida
+        function calcularPuntsPartida(partida) {
+            // Comprovar si és copa (3 punts per victòria)
+            const esCopa = partida.lloc && (
+                partida.lloc.toLowerCase().includes('copa') ||
+                partida.equip?.toLowerCase().includes('copa')
+            );
+            const puntsVictoria = esCopa ? 3 : 2;
+            
+            if (partida.caramboles > partida.caramboles_oponent) {
+                return puntsVictoria; // Victòria
+            } else if (partida.caramboles === partida.caramboles_oponent) {
+                return 1; // Empat
+            } else {
+                return 0; // Derrota
+            }
+        }
+
+        // Calcular estadístiques de punts
+        function calcularEstadistiquesPunts(partides) {
+            let puntsGuanyats = 0;
+            let victories = 0;
+            let empats = 0;
+            let derrotes = 0;
+            
+            partides.forEach(p => {
+                if (p.oponent && p.oponent.trim() !== '') {
+                    const punts = calcularPuntsPartida(p);
+                    puntsGuanyats += punts;
+                    
+                    if (p.caramboles > p.caramboles_oponent) victories++;
+                    else if (p.caramboles === p.caramboles_oponent) empats++;
+                    else derrotes++;
+                }
+            });
+            
+            const puntsDisputats = partides.filter(p => p.oponent && p.oponent.trim() !== '').length * 2;
+            
+            return {
+                puntsGuanyats,
+                puntsDisputats,
+                victories,
+                empats,
+                derrotes
+            };
+        }
+
         // Estadístiques globals
         function updateGlobalStats() {
             const totalPartides = PARTIDES_DATA.length;
@@ -2437,6 +2490,10 @@ updateChart();
             const ent15 = ultimes15.reduce((sum, p) => sum + p.entrades, 0);
             const mitjana15 = car15 / ent15;
 
+            // Estadístiques de punts
+            const puntsTotal = calcularEstadistiquesPunts(PARTIDES_DATA);
+            const punts15 = calcularEstadistiquesPunts(ultimes15);
+
             // Millor i pitjor partida
             const millorPartida = PARTIDES_DATA.reduce((max, p) => p.mitjana > max.mitjana ? p : max);
             const pitjorPartida = PARTIDES_DATA.reduce((min, p) => p.mitjana < min.mitjana ? p : min);
@@ -2445,18 +2502,22 @@ updateChart();
                 <div class="stat-card">
                     <div class="label">Partides Totals</div>
                     <div class="value">${totalPartides}</div>
+                    <div class="subvalue">${puntsTotal.victories}V - ${puntsTotal.empats}E - ${puntsTotal.derrotes}D</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Punts Totals</div>
+                    <div class="value">${puntsTotal.puntsGuanyats}/${puntsTotal.puntsDisputats}</div>
+                    <div class="subvalue">${((puntsTotal.puntsGuanyats / puntsTotal.puntsDisputats) * 100).toFixed(1)}% efectivitat</div>
                 </div>
                 <div class="stat-card">
                     <div class="label">Mitjana Global</div>
                     <div class="value">${mitjanaGlobal.toFixed(3)}</div>
+                    <div class="subvalue">${totalCaramboles} caramboles</div>
                 </div>
                 <div class="stat-card">
-                    <div class="label">Últimes ${ultimes15.length} Partides</div>
+                    <div class="label">Últimes ${ultimes15.length}</div>
                     <div class="value">${mitjana15.toFixed(3)}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Total Caramboles</div>
-                    <div class="value">${totalCaramboles}</div>
+                    <div class="subvalue">${punts15.puntsGuanyats}/${punts15.puntsDisputats} punts</div>
                 </div>
                 <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                     <div class="label" style="font-size: 11px; margin-bottom: 3px;">🏆 Millor Partida</div>
