@@ -33,17 +33,28 @@ app.post('/api/partides/gomez', async (req, res) => {
     try {
         const partides = req.body;
 
+        // Eliminar tots els camps que Supabase genera automàticament
+        const partidesNetejades = partides.map(p => {
+            const { id, created_at, updated_at, ...rest } = p;
+            return rest;
+        });
+
         // Eliminar totes les partides existents
-        await supabase.from('partides_gomez').delete().neq('id', 0);
+        const { error: deleteError } = await supabase
+            .from('partides_gomez')
+            .delete()
+            .gte('id', 0);
+
+        if (deleteError) throw deleteError;
 
         // Inserir les noves partides
         const { data, error } = await supabase
             .from('partides_gomez')
-            .insert(partides);
+            .insert(partidesNetejades);
 
         if (error) throw error;
 
-        console.log('✅ Partides de Gómez guardades correctament:', partides.length);
+        console.log('✅ Partides de Gómez guardades correctament:', partidesNetejades.length);
         res.json({ success: true, message: 'Partides guardades correctament' });
     } catch (error) {
         console.error('❌ Error guardant partides de Gómez:', error);
@@ -74,17 +85,28 @@ app.post('/api/partides/chuecos', async (req, res) => {
     try {
         const partides = req.body;
 
+        // Eliminar tots els camps que Supabase genera automàticament
+        const partidesNetejades = partides.map(p => {
+            const { id, created_at, updated_at, ...rest } = p;
+            return rest;
+        });
+
         // Eliminar totes les partides existents
-        await supabase.from('partides_chuecos').delete().neq('id', 0);
+        const { error: deleteError } = await supabase
+            .from('partides_chuecos')
+            .delete()
+            .gte('id', 0);
+
+        if (deleteError) throw deleteError;
 
         // Inserir les noves partides
         const { data, error } = await supabase
             .from('partides_chuecos')
-            .insert(partides);
+            .insert(partidesNetejades);
 
         if (error) throw error;
 
-        console.log('✅ Partides de Chuecos guardades correctament:', partides.length);
+        console.log('✅ Partides de Chuecos guardades correctament:', partidesNetejades.length);
         res.json({ success: true, message: 'Partides guardades correctament' });
     } catch (error) {
         console.error('❌ Error guardant partides de Chuecos:', error);
