@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Estadístiques Billar - Albert Gómez</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card .label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 24px;
+        }
+        
+        .range-selector {
+            margin-bottom: 15px;
+        }
+        
+        .range-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .range-selector input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .range-selector input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        .range-selector input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .range-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+        
+        .simulator {
+            margin-top: 15px;
+        }
+        
+        .sim-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .input-group input, .input-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin: 0 2px;
+        }
+        
+        .sim-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .sim-result.show {
+            display: block;
+        }
+        
+        .sim-result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .sim-result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .sim-result-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .sim-result-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .sim-result-value.positive {
+            color: #28a745;
+        }
+        
+        .sim-result-value.negative {
+            color: #dc3545;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .highlight {
+            background: #fff3cd !important;
+        }
+        
+        .best {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .worst {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .quick-stat {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .quick-stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        .quick-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            color: #667eea;
+            font-size: 20px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-grid-full {
+            grid-column: 1 / -1;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .data-management {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .data-management h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        @media (max-width: 600px) {
+            .stats-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .sim-inputs, .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+            }
+            
+            .tabs {
+                font-size: 12px;
+            }
+            
+            .tab {
+                padding: 10px;
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎱 Estadístiques de Billar</h1>
+            <div style="text-align: center; color: #666; margin-top: 5px;">Albert Gómez</div>
+            <div class="stats-summary" id="globalStats"></div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('evolution')">📊 Evolució</button>
+            <button class="tab" onclick="switchTab('simulator')">🎯 Simulador</button>
+            <button class="tab" onclick="switchTab('table')">📋 Partides</button>
+            <button class="tab" onclick="switchTab('manage')">⚙️ Gestió</button>
+        </div>
+        
+        <!-- TAB: EVOLUCIÓ -->
+        <div id="evolution" class="tab-content active">
+            <div class="card">
+                <h2><span class="icon">📈</span> Evolució de la Mitjana</h2>
+                <div class="range-selector">
+                    <label>Selecciona el grup de 15 partides:</label>
+                    <input type="range" id="rangeSlider" min="1" max="20" value="20" step="1">
+                    <div class="range-info">
+                        <span id="rangeStart">Partida 1</span>
+                        <span id="rangeEnd">Partida 15</span>
+                    </div>
+                </div>
+                <div class="quick-stats" id="quickStats"></div>
+                <div class="chart-container">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: SIMULADOR -->
+        <div id="simulator" class="tab-content">
+            <div class="card">
+                <h2><span class="icon">🎯</span> Simulador de Mitjana</h2>
+                <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                    Introdueix les caramboles i entrades de la propera partida per veure com canviarà la teva mitjana de les últimes 15 partides.
+                </p>
+                
+                <div class="simulator">
+                    <div class="sim-inputs">
+                        <div class="input-group">
+                            <label>Caramboles</label>
+                            <input type="number" id="simCaramboles" min="0" placeholder="Ex: 25">
+                        </div>
+                        <div class="input-group">
+                            <label>Entrades</label>
+                            <input type="number" id="simEntrades" min="1" placeholder="Ex: 50">
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="calcularSimulacio()">Calcular Mitjana</button>
+                    <button class="btn btn-secondary" onclick="simularMillor()">Simular Millor Partida</button>
+                    <button class="btn btn-secondary" onclick="simularPitjor()">Simular Pitjor Partida</button>
+                    
+                    <div class="sim-result" id="simResult"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: TAULA -->
+        <div id="table" class="tab-content">
+            <div class="card">
+                <h2><span class="icon">📋</span> Totes les Partides</h2>
+                <button class="btn btn-success" onclick="openAddModal()">➕ Afegir Nova Partida</button>
+                <div class="table-container">
+                    <table id="partidesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Data</th>
+                                <th>Oponent</th>
+                                <th>C</th>
+                                <th>E</th>
+                                <th>Mitjana</th>
+                                <th>Accions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="partidesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB: GESTIÓ -->
+        <div id="manage" class="tab-content">
+            <div class="card">
+                <h2><span class="icon">⚙️</span> Gestió de Dades</h2>
+                
+                <div class="alert alert-info">
+                    <strong>ℹ️ Informació:</strong> Les dades es guarden automàticament al teu navegador. Pots exportar-les per fer còpia de seguretat o importar-les en un altre dispositiu.
+                </div>
+                
+                <div class="data-management">
+                    <h3>📤 Exportar Dades</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                        Descarrega totes les teves partides en format JSON per fer còpia de seguretat.
+                    </p>
+                    <button class="btn btn-success" onclick="exportarDades()">Descarregar JSON</button>
+                </div>
+                
+                <div class="data-management">
+                    <h3>📥 Importar Dades</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                        Carrega un fitxer JSON amb partides exportades prèviament.
+                    </p>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importarDades(event)">
+                    <button class="btn btn-warning" onclick="document.getElementById('fileInput').click()">Carregar JSON</button>
+                </div>
+                
+                <div class="data-management">
+                    <h3>🔄 Restaurar Dades Inicials</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                        Si detectes problemes o vols tornar a les dades originals del fitxer, pots restaurar-les aquí. Això reemplaçarà les dades actuals amb les 35 partides inicials.
+                    </p>
+                    <button class="btn btn-warning" onclick="restaurarDadesInicials()">🔄 Restaurar Dades Inicials</button>
+                </div>
+                
+                <div class="data-management">
+                    <h3>🗑️ Esborrar Totes les Dades</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                        <strong>⚠️ Atenció:</strong> Aquesta acció eliminarà totes les partides guardades. Fes una exportació abans si vols conservar-les.
+                    </p>
+                    <button class="btn btn-danger" onclick="confirmarEsborrarTot()">Esborrar Tot</button>
+                </div>
+                
+                <div class="data-management">
+                    <h3>📊 Estadístiques</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong>Total partides:</strong> <span id="totalPartides">0</span>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Espai utilitzat:</strong> <span id="espaciUtilitzat">0 KB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal per afegir/editar partida -->
+    <div id="partidaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">➕ Afegir Nova Partida</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="partidaForm" onsubmit="guardarPartida(event)">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Data *</label>
+                        <input type="date" id="formData" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Lloc</label>
+                        <input type="text" id="formLloc" placeholder="Ex: Banyoles">
+                    </div>
+                    <div class="input-group form-grid-full">
+                        <label>Oponent *</label>
+                        <input type="text" id="formOponent" required placeholder="Ex: Jose Jiménez">
+                    </div>
+                    <div class="input-group form-grid-full">
+                        <label>Equip</label>
+                        <input type="text" id="formEquip" placeholder="Ex: C. B. Sant Adrià">
+                    </div>
+                    <div class="input-group">
+                        <label>Caramboles (teves) *</label>
+                        <input type="number" id="formCaramboles" required min="0" placeholder="Ex: 30">
+                    </div>
+                    <div class="input-group">
+                        <label>Entrades *</label>
+                        <input type="number" id="formEntrades" required min="1" placeholder="Ex: 46">
+                    </div>
+                    <div class="input-group">
+                        <label>Caramboles oponent</label>
+                        <input type="number" id="formCarambolesOponent" min="0" placeholder="Ex: 21">
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">💾 Guardar</button>
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal()">✖️ Cancel·lar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Dades inicials de les partides
+        const INITIAL_DATA = [
+  {
+    "num": 1,
+    "data": "2024-04-12",
+    "lloc": "Sants",
+    "oponent": "Albert Garcia",
+    "equip": "C. B. Banyoles",
+    "caramboles": 30,
+    "caramboles_oponent": 12,
+    "entrades": 41,
+    "mitjana": 0.7317073170731707,
+    "mitjana_oponent": 0.2926829268292683
+  },
+  {
+    "num": 2,
+    "data": "2024-04-12",
+    "lloc": "Sants",
+    "oponent": "Jose Luis Quesada",
+    "equip": "C. B. Sant Boi",
+    "caramboles": 26,
+    "caramboles_oponent": 30,
+    "entrades": 40,
+    "mitjana": 0.65,
+    "mitjana_oponent": 0.75
+  },
+  {
+    "num": 3,
+    "data": "2024-06-08",
+    "lloc": "Granollers",
+    "oponent": "Pablo Cuevas",
+    "equip": "C. B. Granollers",
+    "caramboles": 30,
+    "caramboles_oponent": 23,
+    "entrades": 37,
+    "mitjana": 0.8108108108108109,
+    "mitjana_oponent": 0.6216216216216216
+  },
+  {
+    "num": 4,
+    "data": "2024-06-08",
+    "lloc": "Granollers",
+    "oponent": "Joan Carles Taza",
+    "equip": "C. B. Lliçà",
+    "caramboles": 17,
+    "caramboles_oponent": 30,
+    "entrades": 50,
+    "mitjana": 0.34,
+    "mitjana_oponent": 0.6
+  },
+  {
+    "num": 5,
+    "data": "2024-06-15",
+    "lloc": "Banyoles",
+    "oponent": "Joan Carles Taza",
+    "equip": "C. B. Lliçà",
+    "caramboles": 9,
+    "caramboles_oponent": 30,
+    "entrades": 34,
+    "mitjana": 0.2647058823529412,
+    "mitjana_oponent": 0.8823529411764706
+  },
+  {
+    "num": 6,
+    "data": "2024-06-15",
+    "lloc": "Banyoles",
+    "oponent": "Josep Lluis Majua",
+    "equip": "C. B. Canet",
+    "caramboles": 15,
+    "caramboles_oponent": 30,
+    "entrades": 43,
+    "mitjana": 0.3488372093023256,
+    "mitjana_oponent": 0.6976744186046512
+  },
+  {
+    "num": 7,
+    "data": "2024-07-13",
+    "lloc": "Mataró",
+    "oponent": "Eva Hermida",
+    "equip": "C. B. Manresa",
+    "caramboles": 29,
+    "caramboles_oponent": 14,
+    "entrades": 50,
+    "mitjana": 0.58,
+    "mitjana_oponent": 0.28
+  },
+  {
+    "num": 8,
+    "data": "2024-07-13",
+    "lloc": "Mataró",
+    "oponent": "Eva Hermida",
+    "equip": "C. B. Manresa",
+    "caramboles": 25,
+    "caramboles_oponent": 12,
+    "entrades": 50,
+    "mitjana": 0.5,
+    "mitjana_oponent": 0.24
+  },
+  {
+    "num": 9,
+    "data": "2024-07-20",
+    "lloc": "Mataró",
+    "oponent": "Josep Lluis Majua",
+    "equip": "C.B. Cerdanyola",
+    "caramboles": 18,
+    "caramboles_oponent": 30,
+    "entrades": 44,
+    "mitjana": 0.4090909090909091,
+    "mitjana_oponent": 0.6818181818181818
+  },
+  {
+    "num": 10,
+    "data": "2024-07-20",
+    "lloc": "Mataró",
+    "oponent": "Fernando Corpas ",
+    "equip": "S.B. Molins",
+    "caramboles": 25,
+    "caramboles_oponent": 30,
+    "entrades": 47,
+    "mitjana": 0.5319148936170213,
+    "mitjana_oponent": 0.6382978723404256
+  },
+  {
+    "num": 11,
+    "data": "2024-10-05",
+    "lloc": "Lliçà",
+    "oponent": "Antonio Limones",
+    "equip": "C. B. Lliçà",
+    "caramboles": 16,
+    "caramboles_oponent": 23,
+    "entrades": 50,
+    "mitjana": 0.32,
+    "mitjana_oponent": 0.46
+  },
+  {
+    "num": 12,
+    "data": "2024-11-09",
+    "lloc": "Banyoles",
+    "oponent": "Manel Fontes",
+    "equip": "C. B. Sant Boi",
+    "caramboles": 13,
+    "caramboles_oponent": 17,
+    "entrades": 50,
+    "mitjana": 0.26,
+    "mitjana_oponent": 0.34
+  },
+  {
+    "num": 13,
+    "data": "2024-11-23",
+    "lloc": "Sant Adrià",
+    "oponent": "Max Jiménez",
+    "equip": "C. B. Sant Adrià",
+    "caramboles": 28,
+    "caramboles_oponent": 16,
+    "entrades": 50,
+    "mitjana": 0.56,
+    "mitjana_oponent": 0.32
+  },
+  {
+    "num": 14,
+    "data": "2024-11-23",
+    "lloc": "Sant Adrià",
+    "oponent": "Antonio Montes ",
+    "equip": "C. B. Sant Adrià",
+    "caramboles": 17,
+    "caramboles_oponent": 30,
+    "entrades": 47,
+    "mitjana": 0.3617021276595745,
+    "mitjana_oponent": 0.6382978723404256
+  },
+  {
+    "num": 15,
+    "data": "2024-11-23",
+    "lloc": "Blanes",
+    "oponent": "Serafin Martínez",
+    "equip": "C. B. Blanes",
+    "caramboles": 26,
+    "caramboles_oponent": 25,
+    "entrades": 50,
+    "mitjana": 0.52,
+    "mitjana_oponent": 0.5
+  },
+  {
+    "num": 16,
+    "data": "2024-12-14",
+    "lloc": "Banyoles",
+    "oponent": "Albert Gil",
+    "equip": "C.B. Monforte",
+    "caramboles": 16,
+    "caramboles_oponent": 30,
+    "entrades": 41,
+    "mitjana": 0.3902439024390244,
+    "mitjana_oponent": 0.7317073170731707
+  },
+  {
+    "num": 17,
+    "data": "2024-12-21",
+    "lloc": "Banyoles",
+    "oponent": "Francisco Vílchez",
+    "equip": "Coral Colon",
+    "caramboles": 20,
+    "caramboles_oponent": 24,
+    "entrades": 50,
+    "mitjana": 0.4,
+    "mitjana_oponent": 0.48
+  },
+  {
+    "num": 18,
+    "data": "2025-01-11",
+    "lloc": "Mataró",
+    "oponent": "Rafael Salazar",
+    "equip": "C.B Mataró",
+    "caramboles": 30,
+    "caramboles_oponent": 24,
+    "entrades": 48,
+    "mitjana": 0.625,
+    "mitjana_oponent": 0.5
+  },
+  {
+    "num": 19,
+    "data": "2025-01-18",
+    "lloc": "Banyoles",
+    "oponent": "Jose Antonio Gavilan",
+    "equip": "C. B. Lliçà",
+    "caramboles": 30,
+    "caramboles_oponent": 23,
+    "entrades": 46,
+    "mitjana": 0.6521739130434783,
+    "mitjana_oponent": 0.5
+  },
+  {
+    "num": 20,
+    "data": "2025-02-01",
+    "lloc": "Premià",
+    "oponent": "Felicià Marin",
+    "equip": "C. B. Premià",
+    "caramboles": 18,
+    "caramboles_oponent": 30,
+    "entrades": 42,
+    "mitjana": 0.42857142857142855,
+    "mitjana_oponent": 0.7142857142857143
+  },
+  {
+    "num": 21,
+    "data": "2025-02-21",
+    "lloc": "Sant Boi",
+    "oponent": "Jose Luis Quesada",
+    "equip": "C. B. Sant Boi",
+    "caramboles": 21,
+    "caramboles_oponent": 30,
+    "entrades": 46,
+    "mitjana": 0.45652173913043476,
+    "mitjana_oponent": 0.6521739130434783
+  },
+  {
+    "num": 22,
+    "data": "2025-03-01",
+    "lloc": "Banyoles",
+    "oponent": "Francisco Rodríguez",
+    "equip": "C. B. Blanes",
+    "caramboles": 21,
+    "caramboles_oponent": 30,
+    "entrades": 43,
+    "mitjana": 0.4883720930232558,
+    "mitjana_oponent": 0.6976744186046512
+  },
+  {
+    "num": 23,
+    "data": "2025-03-15",
+    "lloc": "Monforte",
+    "oponent": "Jordi Oliver",
+    "equip": "C.B. Monforte",
+    "caramboles": 21,
+    "caramboles_oponent": 30,
+    "entrades": 45,
+    "mitjana": 0.4666666666666667,
+    "mitjana_oponent": 0.6666666666666666
+  },
+  {
+    "num": 24,
+    "data": "2025-04-05",
+    "lloc": "Coral Colon",
+    "oponent": "Yuri Trullás",
+    "equip": "Coral Colon",
+    "caramboles": 30,
+    "caramboles_oponent": 18,
+    "entrades": 42,
+    "mitjana": 0.7142857142857143,
+    "mitjana_oponent": 0.42857142857142855
+  },
+  {
+    "num": 25,
+    "data": "2025-04-11",
+    "lloc": "Banyoles",
+    "oponent": "Salvador Bort",
+    "equip": "C.B Mataró",
+    "caramboles": 26,
+    "caramboles_oponent": 30,
+    "entrades": 42,
+    "mitjana": 0.6190476190476191,
+    "mitjana_oponent": 0.7142857142857143
+  },
+  {
+    "num": 26,
+    "data": "2025-05-17",
+    "lloc": "Sants",
+    "oponent": "Carmelo Garcia",
+    "equip": "C.B. Sants",
+    "caramboles": 30,
+    "caramboles_oponent": 20,
+    "entrades": 44,
+    "mitjana": 0.6818181818181818,
+    "mitjana_oponent": 0.45454545454545453
+  },
+  {
+    "num": 27,
+    "data": "2025-05-17",
+    "lloc": "Sants",
+    "oponent": "Hector Suarez",
+    "equip": "C. B. Sant Adrià",
+    "caramboles": 22,
+    "caramboles_oponent": 30,
+    "entrades": 45,
+    "mitjana": 0.4888888888888889,
+    "mitjana_oponent": 0.6666666666666666
+  },
+  {
+    "num": 28,
+    "data": "2025-06-07",
+    "lloc": "Unió Coral",
+    "oponent": "Cipriano Becerra",
+    "equip": "Unió Coral",
+    "caramboles": 17,
+    "caramboles_oponent": 20,
+    "entrades": 50,
+    "mitjana": 0.34,
+    "mitjana_oponent": 0.4
+  },
+  {
+    "num": 29,
+    "data": "2025-06-07",
+    "lloc": "Unió Coral",
+    "oponent": "Antonio Saez",
+    "equip": "C. B. Manresa",
+    "caramboles": 30,
+    "caramboles_oponent": 20,
+    "entrades": 49,
+    "mitjana": 0.6122448979591837,
+    "mitjana_oponent": 0.40816326530612246
+  },
+  {
+    "num": 30,
+    "data": "2025-07-12",
+    "lloc": "Mataró",
+    "oponent": "Joan Ralita",
+    "equip": "C. B. Banyoles",
+    "caramboles": 29,
+    "caramboles_oponent": 22,
+    "entrades": 50,
+    "mitjana": 0.58,
+    "mitjana_oponent": 0.44
+  },
+  {
+    "num": 31,
+    "data": "2025-07-12",
+    "lloc": "Mataró",
+    "oponent": "Dani Fernández",
+    "equip": "C.B. Sants",
+    "caramboles": 27,
+    "caramboles_oponent": 26,
+    "entrades": 50,
+    "mitjana": 0.54,
+    "mitjana_oponent": 0.52
+  },
+  {
+    "num": 32,
+    "data": "2025-07-19",
+    "lloc": "Mataró",
+    "oponent": "Pere Ribas",
+    "equip": "C.B Mataró",
+    "caramboles": 30,
+    "caramboles_oponent": 19,
+    "entrades": 44,
+    "mitjana": 0.6818181818181818,
+    "mitjana_oponent": 0.4318181818181818
+  },
+  {
+    "num": 33,
+    "data": "2025-07-19",
+    "lloc": "Mataró",
+    "oponent": "Ricardo García",
+    "equip": "C.B. Monforte",
+    "caramboles": 19,
+    "caramboles_oponent": 30,
+    "entrades": 33,
+    "mitjana": 0.5757575757575758,
+    "mitjana_oponent": 0.9090909090909091
+  },
+  {
+    "num": 34,
+    "data": "2025-09-27",
+    "lloc": "Banyoles",
+    "oponent": "Alejandro López",
+    "equip": "C. B. Sant Boi",
+    "caramboles": 23,
+    "caramboles_oponent": 30,
+    "entrades": 45,
+    "mitjana": 0.5111111111111111,
+    "mitjana_oponent": 0.6666666666666666
+  },
+  {
+    "num": 35,
+    "data": "2025-10-10",
+    "lloc": "Banyoles",
+    "oponent": "Jose Jiménez",
+    "equip": "C. B. Sant Adrià",
+    "caramboles": 30,
+    "caramboles_oponent": 21,
+    "entrades": 46,
+    "mitjana": 0.6521739130434783,
+    "mitjana_oponent": 0.45652173913043476
+  }
+];
+        
+        let PARTIDES_DATA = [];
+        let chart = null;
+        let currentRange = { start: 0, end: 15 };
+        let editingIndex = -1;
+        
+        // LocalStorage keys
+        const STORAGE_KEY = 'billar_partides_data';
+        const STORAGE_VERSION = '1.0';
+        
+        // Inicialitzar l'aplicació
+        function init() {
+            carregarDades();
+            updateGlobalStats();
+            updateQuickStats(currentRange.start, currentRange.end);
+            updateChart(currentRange.start, currentRange.end);
+            renderPartidesTable();
+            setupRangeSlider();
+            updateManageStats();
+        }
+        
+        // Gestió de dades amb localStorage
+        function carregarDades() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    const savedPartides = data.partides || [];
+                    
+                    // Comparar amb dades inicials: si INITIAL_DATA té més partides o és diferent, actualitzar
+                    if (INITIAL_DATA.length > savedPartides.length) {
+                        console.log('Actualitzant amb dades més noves:', INITIAL_DATA.length, 'vs', savedPartides.length);
+                        PARTIDES_DATA = [...INITIAL_DATA];
+                        guardarDadesStorage();
+                    } else if (INITIAL_DATA.length === savedPartides.length) {
+                        // Verificar si les dades són diferents
+                        const lastInitial = INITIAL_DATA[INITIAL_DATA.length - 1];
+                        const lastSaved = savedPartides[savedPartides.length - 1];
+                        if (JSON.stringify(lastInitial) !== JSON.stringify(lastSaved)) {
+                            console.log('Actualitzant dades modificades');
+                            PARTIDES_DATA = [...INITIAL_DATA];
+                            guardarDadesStorage();
+                        } else {
+                            PARTIDES_DATA = savedPartides;
+                            console.log('Dades carregades des de localStorage:', PARTIDES_DATA.length, 'partides');
+                        }
+                    } else {
+                        // L'usuari ha afegit més partides, mantenir les seves
+                        PARTIDES_DATA = savedPartides;
+                        console.log('Dades de l\'usuari carregades:', PARTIDES_DATA.length, 'partides');
+                    }
+                } catch (e) {
+                    console.error('Error carregant dades:', e);
+                    PARTIDES_DATA = [...INITIAL_DATA];
+                    guardarDadesStorage();
+                }
+            } else {
+                // Primera vegada: carregar dades inicials
+                PARTIDES_DATA = [...INITIAL_DATA];
+                guardarDadesStorage();
+            }
+        }
+        
+        function guardarDadesStorage() {
+            const data = {
+                version: STORAGE_VERSION,
+                lastUpdate: new Date().toISOString(),
+                partides: PARTIDES_DATA
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            console.log('Dades guardades:', PARTIDES_DATA.length, 'partides');
+        }
+        
+        function exportarDades() {
+            const data = {
+                version: STORAGE_VERSION,
+                exportDate: new Date().toISOString(),
+                partides: PARTIDES_DATA
+            };
+            
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `billar_partides_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Dades exportades correctament!');
+        }
+        
+        function importarDades(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.partides && Array.isArray(data.partides)) {
+                        if (confirm(`Vols importar ${data.partides.length} partides? Això reemplaçarà les dades actuals.`)) {
+                            PARTIDES_DATA = data.partides;
+                            guardarDadesStorage();
+                            refreshAll();
+                            alert('✅ Dades importades correctament!');
+                        }
+                    } else {
+                        alert('❌ Format de fitxer no vàlid');
+                    }
+                } catch (e) {
+                    alert('❌ Error llegint el fitxer: ' + e.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        function confirmarEsborrarTot() {
+            if (confirm('⚠️ Segur que vols esborrar TOTES les partides? Aquesta acció no es pot desfer.')) {
+                if (confirm('⚠️ Última confirmació: S\'esborraran ' + PARTIDES_DATA.length + ' partides. Continuar?')) {
+                    PARTIDES_DATA = [];
+                    guardarDadesStorage();
+                    refreshAll();
+                    alert('✅ Totes les dades han estat esborrades');
+                }
+            }
+        }
+        
+        function restaurarDadesInicials() {
+            if (confirm(`⚠️ Vols restaurar les ${INITIAL_DATA.length} partides inicials? Això reemplaçarà les dades actuals.`)) {
+                PARTIDES_DATA = [...INITIAL_DATA];
+                guardarDadesStorage();
+                refreshAll();
+                alert(`✅ Dades restaurades! Ara tens ${PARTIDES_DATA.length} partides.`);
+            }
+        }
+        
+        function updateManageStats() {
+            document.getElementById('totalPartides').textContent = PARTIDES_DATA.length;
+            const sizeBytes = new Blob([localStorage.getItem(STORAGE_KEY) || '']).size;
+            document.getElementById('espaciUtilitzat').textContent = (sizeBytes / 1024).toFixed(2) + ' KB';
+        }
+        
+        // Modal
+        function openAddModal() {
+            editingIndex = -1;
+            document.getElementById('modalTitle').textContent = '➕ Afegir Nova Partida';
+            document.getElementById('partidaForm').reset();
+            document.getElementById('formData').valueAsDate = new Date();
+            document.getElementById('partidaModal').classList.add('show');
+        }
+        
+        function openEditModal(index) {
+            editingIndex = index;
+            const partida = PARTIDES_DATA[index];
+            
+            document.getElementById('modalTitle').textContent = '✏️ Editar Partida #' + partida.num;
+            document.getElementById('formData').value = partida.data;
+            document.getElementById('formLloc').value = partida.lloc || '';
+            document.getElementById('formOponent').value = partida.oponent || '';
+            document.getElementById('formEquip').value = partida.equip || '';
+            document.getElementById('formCaramboles').value = partida.caramboles;
+            document.getElementById('formEntrades').value = partida.entrades;
+            document.getElementById('formCarambolesOponent').value = partida.caramboles_oponent || '';
+            
+            document.getElementById('partidaModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('partidaModal').classList.remove('show');
+            editingIndex = -1;
+        }
+        
+        function guardarPartida(event) {
+            event.preventDefault();
+            
+            const caramboles = parseInt(document.getElementById('formCaramboles').value);
+            const entrades = parseInt(document.getElementById('formEntrades').value);
+            const carambolesOponent = parseInt(document.getElementById('formCarambolesOponent').value) || 0;
+            
+            const partida = {
+                num: editingIndex >= 0 ? PARTIDES_DATA[editingIndex].num : (PARTIDES_DATA.length > 0 ? Math.max(...PARTIDES_DATA.map(p => p.num)) + 1 : 1),
+                data: document.getElementById('formData').value,
+                lloc: document.getElementById('formLloc').value || null,
+                oponent: document.getElementById('formOponent').value,
+                equip: document.getElementById('formEquip').value || null,
+                caramboles: caramboles,
+                caramboles_oponent: carambolesOponent,
+                entrades: entrades,
+                mitjana: caramboles / entrades,
+                mitjana_oponent: carambolesOponent / entrades
+            };
+            
+            if (editingIndex >= 0) {
+                PARTIDES_DATA[editingIndex] = partida;
+            } else {
+                PARTIDES_DATA.push(partida);
+            }
+            
+            // Reordenar per número de partida
+            PARTIDES_DATA.sort((a, b) => a.num - b.num);
+            
+            guardarDadesStorage();
+            refreshAll();
+            closeModal();
+            
+            alert(editingIndex >= 0 ? '✅ Partida actualitzada!' : '✅ Partida afegida!');
+        }
+        
+        function eliminarPartida(index) {
+            const partida = PARTIDES_DATA[index];
+            if (confirm(`Segur que vols eliminar la partida #${partida.num} contra ${partida.oponent}?`)) {
+                PARTIDES_DATA.splice(index, 1);
+                guardarDadesStorage();
+                refreshAll();
+                alert('✅ Partida eliminada!');
+            }
+        }
+        
+        function refreshAll() {
+            updateGlobalStats();
+            const maxRange = PARTIDES_DATA.length - 14;
+            if (maxRange > 0) {
+                currentRange.start = Math.min(currentRange.start, maxRange - 1);
+                currentRange.end = currentRange.start + 15;
+            }
+            updateQuickStats(currentRange.start, currentRange.end);
+            updateChart(currentRange.start, currentRange.end);
+            renderPartidesTable();
+            setupRangeSlider();
+            updateManageStats();
+        }
+        
+        // Estadístiques globals
+        function updateGlobalStats() {
+            const totalPartides = PARTIDES_DATA.length;
+            
+            if (totalPartides === 0) {
+                document.getElementById('globalStats').innerHTML = `
+                    <div class="stat-card" style="grid-column: 1 / -1;">
+                        <div class="label">No hi ha partides</div>
+                        <div class="value" style="font-size: 16px;">Afegeix la primera partida! ➕</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const totalCaramboles = PARTIDES_DATA.reduce((sum, p) => sum + p.caramboles, 0);
+            const totalEntrades = PARTIDES_DATA.reduce((sum, p) => sum + p.entrades, 0);
+            const mitjanaGlobal = totalCaramboles / totalEntrades;
+            
+            // Últimes 15 partides
+            const ultimes15 = PARTIDES_DATA.slice(-15);
+            const car15 = ultimes15.reduce((sum, p) => sum + p.caramboles, 0);
+            const ent15 = ultimes15.reduce((sum, p) => sum + p.entrades, 0);
+            const mitjana15 = car15 / ent15;
+            
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="label">Partides Totals</div>
+                    <div class="value">${totalPartides}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Mitjana Global</div>
+                    <div class="value">${mitjanaGlobal.toFixed(3)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Últimes ${ultimes15.length} Partides</div>
+                    <div class="value">${mitjana15.toFixed(3)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Total Caramboles</div>
+                    <div class="value">${totalCaramboles}</div>
+                </div>
+            `;
+            
+            document.getElementById('globalStats').innerHTML = statsHTML;
+        }
+        
+        // Estadístiques ràpides per al rang seleccionat
+        function updateQuickStats(start, end) {
+            if (PARTIDES_DATA.length === 0) {
+                document.getElementById('quickStats').innerHTML = '';
+                return;
+            }
+            
+            const partides = PARTIDES_DATA.slice(start, end);
+            const totalCar = partides.reduce((sum, p) => sum + p.caramboles, 0);
+            const totalEnt = partides.reduce((sum, p) => sum + p.entrades, 0);
+            const mitjana = totalCar / totalEnt;
+            
+            const millor = partides.reduce((max, p) => p.mitjana > max ? p.mitjana : max, 0);
+            const pitjor = partides.reduce((min, p) => p.mitjana < min ? p.mitjana : min, 1);
+            
+            const statsHTML = `
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Mitjana</div>
+                    <div class="quick-stat-value">${mitjana.toFixed(3)}</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Caramboles/Entrades</div>
+                    <div class="quick-stat-value">${totalCar}/${totalEnt}</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Millor Mitjana</div>
+                    <div class="quick-stat-value best">${millor.toFixed(3)}</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Pitjor Mitjana</div>
+                    <div class="quick-stat-value worst">${pitjor.toFixed(3)}</div>
+                </div>
+            `;
+            
+            document.getElementById('quickStats').innerHTML = statsHTML;
+        }
+        
+        // Configurar el slider
+        function setupRangeSlider() {
+            if (PARTIDES_DATA.length < 15) {
+                document.querySelector('.range-selector').style.display = 'none';
+                return;
+            }
+            
+            document.querySelector('.range-selector').style.display = 'block';
+            const slider = document.getElementById('rangeSlider');
+            const maxRange = PARTIDES_DATA.length - 14;
+            slider.max = maxRange;
+            slider.value = maxRange;
+            
+            slider.oninput = function() {
+                const startIdx = parseInt(this.value) - 1;
+                const endIdx = startIdx + 15;
+                currentRange = { start: startIdx, end: endIdx };
+                
+                document.getElementById('rangeStart').textContent = `Partida ${startIdx + 1}`;
+                document.getElementById('rangeEnd').textContent = `Partida ${endIdx}`;
+                
+                updateQuickStats(startIdx, endIdx);
+                updateChart(startIdx, endIdx);
+            };
+            
+            // Inicialitzar els labels
+            const startIdx = maxRange - 1;
+            const endIdx = startIdx + 15;
+            document.getElementById('rangeStart').textContent = `Partida ${startIdx + 1}`;
+            document.getElementById('rangeEnd').textContent = `Partida ${endIdx}`;
+        }
+        
+        // Actualitzar el gràfic
+        function updateChart(start, end) {
+            if (PARTIDES_DATA.length === 0) {
+                if (chart) {
+                    chart.destroy();
+                    chart = null;
+                }
+                return;
+            }
+            
+            const partides = PARTIDES_DATA.slice(start, end);
+            
+            const labels = partides.map(p => `P${p.num}`);
+            const mitjanes = partides.map(p => p.mitjana);
+            
+            // Calcular mitjana de les últimes 15 partides per cada punt
+            // Només es mostra a partir de la partida 15 (quan ja hi ha 15 partides completes)
+            const mitjanaAcumulada = partides.map((p, idx) => {
+                const partidaNum = start + idx; // Índex real a PARTIDES_DATA
+                
+                // Abans de la partida 15, no mostrar res (serà null)
+                if (partidaNum < 14) {
+                    return null;
+                }
+                
+                // A partir de la partida 15, calcular mitjana de les últimes 15
+                const startIdx = partidaNum - 14; // Últimes 15 partides (inclosa l'actual)
+                const endIdx = partidaNum + 1;
+                const ultimes15 = PARTIDES_DATA.slice(startIdx, endIdx);
+                const totalCar = ultimes15.reduce((sum, part) => sum + part.caramboles, 0);
+                const totalEnt = ultimes15.reduce((sum, part) => sum + part.entrades, 0);
+                return totalCar / totalEnt;
+            });
+            
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Mitjana per Partida',
+                            data: mitjanes,
+                            borderColor: '#764ba2',
+                            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Mitjana Últimes 15 Partides',
+                            data: mitjanaAcumulada,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            spanGaps: false // No connectar quan hi ha nulls
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const idx = context.dataIndex;
+                                    const partida = partides[idx];
+                                    const partidaNum = start + idx;
+                                    
+                                    if (context.datasetIndex === 0) {
+                                        return `Partida: ${partida.caramboles}/${partida.entrades} = ${partida.mitjana.toFixed(3)}`;
+                                    } else {
+                                        if (context.parsed.y === null) {
+                                            return 'Mitjana últimes 15: Encara no disponible';
+                                        }
+                                        return `Mitjana últimes 15 partides: ${context.parsed.y.toFixed(3)}`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Renderitzar la taula de partides
+        function renderPartidesTable() {
+            const tbody = document.getElementById('partidesTableBody');
+            
+            if (PARTIDES_DATA.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #999;">No hi ha partides. Afegeix la primera! ➕</td></tr>';
+                return;
+            }
+            
+            // Trobar millor i pitjor mitjana
+            const millor = Math.max(...PARTIDES_DATA.map(p => p.mitjana));
+            const pitjor = Math.min(...PARTIDES_DATA.map(p => p.mitjana));
+            
+            const rows = PARTIDES_DATA.slice().reverse().map((p, reverseIdx) => {
+                const originalIdx = PARTIDES_DATA.length - 1 - reverseIdx;
+                const isBest = p.mitjana === millor;
+                const isWorst = p.mitjana === pitjor;
+                const className = isBest ? 'best' : isWorst ? 'worst' : '';
+                
+                return `
+                    <tr>
+                        <td><strong>${p.num}</strong></td>
+                        <td>${p.data ? new Date(p.data).toLocaleDateString('ca-ES', {day: '2-digit', month: '2-digit', year: '2-digit'}) : '-'}</td>
+                        <td style="font-size: 12px;">${p.oponent || '-'}</td>
+                        <td>${p.caramboles}</td>
+                        <td>${p.entrades}</td>
+                        <td class="${className}"><strong>${p.mitjana.toFixed(3)}</strong></td>
+                        <td>
+                            <button class="btn btn-warning btn-small" onclick="openEditModal(${originalIdx})">✏️</button>
+                            <button class="btn btn-danger btn-small" onclick="eliminarPartida(${originalIdx})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tbody.innerHTML = rows;
+        }
+        
+        // Simulació
+        function calcularSimulacio() {
+            const caramboles = parseInt(document.getElementById('simCaramboles').value);
+            const entrades = parseInt(document.getElementById('simEntrades').value);
+            
+            if (!caramboles || !entrades || entrades === 0) {
+                alert('Si us plau, introdueix caramboles i entrades vàlides');
+                return;
+            }
+            
+            mostrarResultatSimulacio(caramboles, entrades);
+        }
+        
+        function simularMillor() {
+            if (PARTIDES_DATA.length === 0) {
+                alert('No hi ha partides per simular');
+                return;
+            }
+            
+            const millor = PARTIDES_DATA.reduce((max, p) => p.mitjana > max.mitjana ? p : max);
+            
+            document.getElementById('simCaramboles').value = millor.caramboles;
+            document.getElementById('simEntrades').value = millor.entrades;
+            
+            mostrarResultatSimulacio(millor.caramboles, millor.entrades, 'millor');
+        }
+        
+        function simularPitjor() {
+            if (PARTIDES_DATA.length === 0) {
+                alert('No hi ha partides per simular');
+                return;
+            }
+            
+            const pitjor = PARTIDES_DATA.reduce((min, p) => p.mitjana < min.mitjana ? p : min);
+            
+            document.getElementById('simCaramboles').value = pitjor.caramboles;
+            document.getElementById('simEntrades').value = pitjor.entrades;
+            
+            mostrarResultatSimulacio(pitjor.caramboles, pitjor.entrades, 'pitjor');
+        }
+        
+        function mostrarResultatSimulacio(caramboles, entrades, tipus = 'custom') {
+            if (PARTIDES_DATA.length < 15) {
+                alert('Necessites almenys 15 partides per usar el simulador');
+                return;
+            }
+            
+            // Últimes 15 partides
+            const ultimes15 = PARTIDES_DATA.slice(-15);
+            const carAct = ultimes15.reduce((sum, p) => sum + p.caramboles, 0);
+            const entAct = ultimes15.reduce((sum, p) => sum + p.entrades, 0);
+            const mitjanaActual = carAct / entAct;
+            
+            // Noves últimes 15 (treient la primera i afegint la nova)
+            const ultimes14 = PARTIDES_DATA.slice(-14);
+            const carNou = ultimes14.reduce((sum, p) => sum + p.caramboles, 0) + caramboles;
+            const entNou = ultimes14.reduce((sum, p) => sum + p.entrades, 0) + entrades;
+            const mitjanaNova = carNou / entNou;
+            
+            const diferencia = mitjanaNova - mitjanaActual;
+            const tipusText = tipus === 'millor' ? 'millor partida' : tipus === 'pitjor' ? 'pitjor partida' : 'partida personalitzada';
+            
+            const resultHTML = `
+                <div style="text-align: center; margin-bottom: 10px; color: #667eea; font-weight: bold;">
+                    Simulació: ${tipusText}
+                </div>
+                <div class="sim-result-item">
+                    <span class="sim-result-label">Mitjana actual (últimes 15):</span>
+                    <span class="sim-result-value">${mitjanaActual.toFixed(3)}</span>
+                </div>
+                <div class="sim-result-item">
+                    <span class="sim-result-label">Nova partida:</span>
+                    <span class="sim-result-value">${caramboles} / ${entrades} = ${(caramboles/entrades).toFixed(3)}</span>
+                </div>
+                <div class="sim-result-item">
+                    <span class="sim-result-label">Nova mitjana (últimes 15):</span>
+                    <span class="sim-result-value">${mitjanaNova.toFixed(3)}</span>
+                </div>
+                <div class="sim-result-item">
+                    <span class="sim-result-label">Diferència:</span>
+                    <span class="sim-result-value ${diferencia > 0 ? 'positive' : 'negative'}">
+                        ${diferencia > 0 ? '+' : ''}${diferencia.toFixed(3)}
+                        ${diferencia > 0 ? '📈' : '📉'}
+                    </span>
+                </div>
+            `;
+            
+            const resultDiv = document.getElementById('simResult');
+            resultDiv.innerHTML = resultHTML;
+            resultDiv.classList.add('show');
+        }
+        
+        // Canviar de tab
+        function switchTab(tabName) {
+            // Actualitzar botons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Actualitzar continguts
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            // Si és el tab d'evolució, redibuixar el gràfic
+            if (tabName === 'evolution' && chart) {
+                chart.resize();
+            }
+        }
+        
+        // Tancar modal amb ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Inicialitzar quan la pàgina estigui carregada
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
