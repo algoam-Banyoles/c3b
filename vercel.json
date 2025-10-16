@@ -10,18 +10,34 @@
       "use": "@vercel/static"
     },
     {
+      "src": "*.js",
+      "use": "@vercel/static"
+    },
+    {
       "src": "*.json",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "icons/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/api/partides/(.*)",
+      "src": "/api/(.*)",
       "dest": "/server.js"
     },
     {
-      "src": "/chuecos.html",
-      "dest": "/chuecos.html"
+      "src": "/icons/(.*)",
+      "dest": "/icons/$1"
+    },
+    {
+      "src": "/(config|navbar)\\.js",
+      "dest": "/$1.js"
+    },
+    {
+      "src": "/(.*)\\.html",
+      "dest": "/$1.html"
     },
     {
       "src": "/(.*)",
