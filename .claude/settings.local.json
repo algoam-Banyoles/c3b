@@ -8,7 +8,9 @@
       "Read(//c/Users/algoa/Estadístiques/**)",
       "Bash(mkdir:*)",
       "Read(//c/Users/algoa/Downloads/icons//**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
