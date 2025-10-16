@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Estadístiques Billar - A. Gómez</title>
+    <title>Estadístiques Billar</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/billar-stats-icon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/billar-stats-icon-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/billar-stats-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/billar-stats-icon-180.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js"></script>
+    <script src="navbar.js"></script>
     <style>
         * {
             margin: 0;
@@ -538,8 +544,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎱 Estadístiques de Billar</h1>
-            <div style="text-align: center; color: #666; margin-top: 5px;">A. Gómez</div>
+            <h1 id="mainTitle"><img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">Estadístiques de Billar</h1>
+            <div id="userSubtitle" style="text-align: center; color: #666; margin-top: 5px;"></div>
             <div class="stats-summary" id="globalStats"></div>
         </div>
         
@@ -1248,6 +1254,14 @@
         
         // Inicialitzar l'aplicació
         async function init() {
+            // Verificar que hi ha usuari configurat
+            const userConfig = BillarConfig.requireUser();
+            if (!userConfig) return;
+
+            // Actualitzar títol amb nom d'usuari i modalitat
+            document.getElementById('mainTitle').innerHTML = `<img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">${userConfig.usuariNom}`;
+            document.getElementById('userSubtitle').textContent = userConfig.modalitatNom;
+
             await carregarDades();
 
             console.log('INIT - Total partides:', PARTIDES_DATA.length);
@@ -1271,7 +1285,7 @@
             console.log('INIT - Cridant updateChart...');
             updateChart();
             updateManageStats();
-            
+
             // Registrar Service Worker per PWA (comentat temporalment per debug)
             /*
             if ('serviceWorker' in navigator) {
@@ -1285,18 +1299,16 @@
         // Gestió de dades amb API del servidor
         async function carregarDades() {
             try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Error carregant dades del servidor');
-                
-                PARTIDES_DATA = await response.json();
+                // Carregar amb la nova API utilitzant config
+                PARTIDES_DATA = await BillarConfig.loadPartides();
                 console.log('✅ Dades carregades des del servidor:', PARTIDES_DATA.length, 'partides');
-                
+
                 // Guardar còpia local com a backup
                 guardarDadesStorage();
             } catch (error) {
                 console.error('❌ Error carregant des del servidor:', error);
                 console.log('Intentant carregar des de localStorage...');
-                
+
                 // Fallback a localStorage
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
@@ -1306,40 +1318,29 @@
                         console.log('⚠️ Dades carregades des de localStorage (backup):', PARTIDES_DATA.length, 'partides');
                     } catch (e) {
                         console.error('Error carregant des de localStorage:', e);
-                        PARTIDES_DATA = [...INITIAL_DATA];
+                        PARTIDES_DATA = [];
                     }
                 } else {
-                    // Si no hi ha res, carregar dades inicials
-                    PARTIDES_DATA = [...INITIAL_DATA];
-                    console.log('Dades inicials carregades:', PARTIDES_DATA.length, 'partides');
+                    // Si no hi ha res, array buit
+                    PARTIDES_DATA = [];
+                    console.log('No hi ha dades disponibles');
                 }
             }
         }
         
         async function guardarDadesStorage() {
-            // Guardar al servidor
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(PARTIDES_DATA)
-                });
-                
-                if (!response.ok) throw new Error('Error guardant al servidor');
-                
-                const result = await response.json();
-                console.log('✅ Dades guardades al servidor:', PARTIDES_DATA.length, 'partides');
-            } catch (error) {
-                console.error('❌ Error guardant al servidor:', error);
-                alert('⚠️ No s\'han pogut guardar les dades al servidor. Assegura\'t que el servidor està funcionant.');
+            // Guardar còpia local com a backup
+            const config = BillarConfig.getConfig();
+            if (!config) {
+                console.error('No hi ha configuració d\'usuari');
+                return;
             }
-            
-            // També guardar còpia local com a backup
+
             const data = {
                 version: STORAGE_VERSION,
                 lastUpdate: new Date().toISOString(),
+                usuari: config.usuariNom,
+                modalitat: config.modalitatNom,
                 partides: PARTIDES_DATA
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -1453,12 +1454,13 @@
         
         async function guardarPartida(event) {
             event.preventDefault();
-            
+
             const caramboles = parseInt(document.getElementById('formCaramboles').value);
             const entrades = parseInt(document.getElementById('formEntrades').value);
             const carambolesOponent = parseInt(document.getElementById('formCarambolesOponent').value) || 0;
             const serieMajor = parseInt(document.getElementById('formSerieMajor').value) || null;
             const urlVideo = document.getElementById('formUrlVideo').value.trim() || null;
+            const competicio = document.getElementById('formCompeticio')?.value || null;
 
             const partida = {
                 num: editingIndex >= 0 ? PARTIDES_DATA[editingIndex].num : (PARTIDES_DATA.length > 0 ? Math.max(...PARTIDES_DATA.map(p => p.num)) + 1 : 1),
@@ -1466,6 +1468,7 @@
                 lloc: document.getElementById('formLloc').value || null,
                 oponent: document.getElementById('formOponent').value,
                 equip: document.getElementById('formEquip').value || null,
+                competicio: competicio,
                 caramboles: caramboles,
                 caramboles_oponent: carambolesOponent,
                 entrades: entrades,
@@ -1474,30 +1477,53 @@
                 serie_major: serieMajor,
                 url_video: urlVideo
             };
-            
-            if (editingIndex >= 0) {
-                PARTIDES_DATA[editingIndex] = partida;
-            } else {
-                PARTIDES_DATA.push(partida);
+
+            try {
+                if (editingIndex >= 0) {
+                    // Actualitzar partida existent
+                    const partidaExistent = PARTIDES_DATA[editingIndex];
+                    if (partidaExistent.id) {
+                        await BillarConfig.updatePartida(partidaExistent.id, partida);
+                    }
+                    PARTIDES_DATA[editingIndex] = { ...partidaExistent, ...partida };
+                } else {
+                    // Crear nova partida
+                    const novaPartida = await BillarConfig.savePartida(partida);
+                    PARTIDES_DATA.push(novaPartida);
+                }
+
+                // Reordenar per número de partida
+                PARTIDES_DATA.sort((a, b) => a.num - b.num);
+
+                await guardarDadesStorage();
+                refreshAll();
+                closeModal();
+
+                alert(editingIndex >= 0 ? '✅ Partida actualitzada!' : '✅ Partida afegida!');
+            } catch (error) {
+                console.error('Error guardant partida:', error);
+                alert('❌ Error guardant la partida: ' + error.message);
             }
-            
-            // Reordenar per número de partida
-            PARTIDES_DATA.sort((a, b) => a.num - b.num);
-            
-            await guardarDadesStorage();
-            refreshAll();
-            closeModal();
-            
-            alert(editingIndex >= 0 ? '✅ Partida actualitzada!' : '✅ Partida afegida!');
         }
         
         async function eliminarPartida(index) {
             const partida = PARTIDES_DATA[index];
             if (confirm(`Segur que vols eliminar la partida #${partida.num} contra ${partida.oponent}?`)) {
-                PARTIDES_DATA.splice(index, 1);
-                await guardarDadesStorage();
-                refreshAll();
-                alert('✅ Partida eliminada!');
+                try {
+                    // Eliminar amb la nova API
+                    if (partida.id) {
+                        await BillarConfig.deletePartida(partida.id);
+                    }
+
+                    // Eliminar de la llista local
+                    PARTIDES_DATA.splice(index, 1);
+                    await guardarDadesStorage();
+                    refreshAll();
+                    alert('✅ Partida eliminada!');
+                } catch (error) {
+                    console.error('Error eliminant partida:', error);
+                    alert('❌ Error eliminant la partida: ' + error.message);
+                }
             }
         }
         

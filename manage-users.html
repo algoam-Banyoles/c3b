@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestió d'Usuaris - Billar Stats</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/billar-stats-icon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/billar-stats-icon-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/billar-stats-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/billar-stats-icon-180.png">
+    <script src="config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            color: #1e40af;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 13px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #1e40af;
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .user-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-info h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .user-info .email {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .user-stats {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #1e40af;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">Gestió d'Usuaris</h1>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary btn-small" onclick="tornarEnrere()">← Tornar</button>
+                <button class="btn btn-small" onclick="mostrarModalNouUsuari()">➕ Nou Usuari</button>
+            </div>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <div class="card">
+            <h2>Usuaris Registrats</h2>
+            <div id="usersContainer" class="users-grid">
+                <div class="empty-state">
+                    <div class="icon">⏳</div>
+                    <p>Carregant usuaris...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nou/Editar Usuari -->
+    <div id="modalUsuari" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nou Usuari</h2>
+            </div>
+
+            <form id="formUsuari" onsubmit="guardarUsuari(event)">
+                <div class="form-group">
+                    <label>Nom *</label>
+                    <input type="text" id="inputNom" required placeholder="Ex: Joan Garcia">
+                </div>
+
+                <div class="form-group">
+                    <label>Email (opcional)</label>
+                    <input type="email" id="inputEmail" placeholder="joan@example.com">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn">Guardar</button>
+                    <button type="button" class="btn btn-secondary" onclick="tancarModal()">Cancel·lar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let usuaris = [];
+        let partidesPerUsuari = {};
+        let usuariEditant = null;
+
+        // Inicialitzar
+        async function init() {
+            await carregarDades();
+        }
+
+        // Carregar totes les dades
+        async function carregarDades() {
+            try {
+                // Carregar usuaris
+                usuaris = await BillarConfig.getUsuaris();
+
+                // Carregar partides de cada usuari per mostrar estadístiques
+                const response = await fetch(`${BillarConfig.API_BASE}/api/partides`);
+                const partides = await response.json();
+
+                // Agrupar per usuari
+                partidesPerUsuari = {};
+                partides.forEach(p => {
+                    if (!partidesPerUsuari[p.usuari_id]) {
+                        partidesPerUsuari[p.usuari_id] = [];
+                    }
+                    partidesPerUsuari[p.usuari_id].push(p);
+                });
+
+                renderUsuaris();
+            } catch (error) {
+                console.error('Error carregant dades:', error);
+                mostrarAlerta('Error carregant dades. Comprova la connexió al servidor.', 'error');
+            }
+        }
+
+        // Renderitzar usuaris
+        function renderUsuaris() {
+            const container = document.getElementById('usersContainer');
+
+            if (usuaris.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">👤</div>
+                        <p>No hi ha usuaris registrats.</p>
+                        <p style="margin-top: 10px;">Crea el primer usuari per començar!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = usuaris.map(user => {
+                const initials = user.nom.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const partides = partidesPerUsuari[user.id] || [];
+                const totalPartides = partides.length;
+
+                return `
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div class="user-avatar">${initials}</div>
+                            <div class="user-info">
+                                <h3>${user.nom}</h3>
+                                <div class="email">${user.email || 'Sense email'}</div>
+                            </div>
+                        </div>
+                        <div class="user-stats">
+                            📊 ${totalPartides} partide${totalPartides !== 1 ? 's' : ''} registrade${totalPartides !== 1 ? 's' : 's'}
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn btn-small" onclick="editarUsuari(${user.id})" style="flex: 1;">✏️ Editar</button>
+                            <button class="btn btn-danger btn-small" onclick="confirmarEliminar(${user.id}, '${user.nom.replace(/'/g, "\\'")}', ${totalPartides})" style="flex: 1;">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar modal nou usuari
+        function mostrarModalNouUsuari() {
+            usuariEditant = null;
+            document.getElementById('modalTitle').textContent = 'Nou Usuari';
+            document.getElementById('inputNom').value = '';
+            document.getElementById('inputEmail').value = '';
+            document.getElementById('modalUsuari').classList.add('show');
+        }
+
+        // Editar usuari
+        function editarUsuari(userId) {
+            const user = usuaris.find(u => u.id === userId);
+            if (!user) return;
+
+            usuariEditant = user;
+            document.getElementById('modalTitle').textContent = 'Editar Usuari';
+            document.getElementById('inputNom').value = user.nom;
+            document.getElementById('inputEmail').value = user.email || '';
+            document.getElementById('modalUsuari').classList.add('show');
+        }
+
+        // Guardar usuari (crear o actualitzar)
+        async function guardarUsuari(event) {
+            event.preventDefault();
+
+            const nom = document.getElementById('inputNom').value.trim();
+            const email = document.getElementById('inputEmail').value.trim() || null;
+
+            try {
+                if (usuariEditant) {
+                    // Actualitzar
+                    await BillarConfig.updateUser(usuariEditant.id, { nom, email });
+                    mostrarAlerta(`Usuari "${nom}" actualitzat correctament!`, 'success');
+                } else {
+                    // Crear
+                    await BillarConfig.createUser(nom, email);
+                    mostrarAlerta(`Usuari "${nom}" creat correctament!`, 'success');
+                }
+
+                tancarModal();
+                await carregarDades();
+            } catch (error) {
+                console.error('Error guardant usuari:', error);
+                mostrarAlerta('Error guardant l\'usuari: ' + error.message, 'error');
+            }
+        }
+
+        // Confirmar eliminació
+        function confirmarEliminar(userId, nom, totalPartides) {
+            let missatge = `Estàs segur que vols eliminar l'usuari "${nom}"?`;
+
+            if (totalPartides > 0) {
+                missatge += `\n\n⚠️ ATENCIÓ: Això també eliminarà ${totalPartides} partide${totalPartides !== 1 ? 's' : ''} associade${totalPartides !== 1 ? 's' : 's'} a aquest usuari!`;
+            }
+
+            if (confirm(missatge)) {
+                eliminarUsuari(userId, nom);
+            }
+        }
+
+        // Eliminar usuari
+        async function eliminarUsuari(userId, nom) {
+            try {
+                await BillarConfig.deleteUser(userId);
+                mostrarAlerta(`Usuari "${nom}" eliminat correctament.`, 'success');
+                await carregarDades();
+
+                // Si l'usuari eliminat és l'actual, redirigir a selecció
+                const config = BillarConfig.getConfig();
+                if (config && config.usuariId === userId) {
+                    BillarConfig.clearConfig();
+                    setTimeout(() => {
+                        window.location.href = 'select-user.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Error eliminant usuari:', error);
+                mostrarAlerta('Error eliminant l\'usuari: ' + error.message, 'error');
+            }
+        }
+
+        // Tancar modal
+        function tancarModal() {
+            document.getElementById('modalUsuari').classList.remove('show');
+        }
+
+        // Tornar enrere
+        function tornarEnrere() {
+            window.location.href = 'index.html';
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // Tancar modal en clicar fora
+        document.getElementById('modalUsuari').addEventListener('click', function(e) {
+            if (e.target === this) {
+                tancarModal();
+            }
+        });
+
+        // Inicialitzar
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Selecciona Usuari - Billar Stats</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/billar-stats-icon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/billar-stats-icon-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/billar-stats-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/billar-stats-icon-180.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            color: #1e40af;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header .icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-card:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border-color: #2563eb;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .user-card.selected {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            border-color: #1e40af;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-card.selected .user-avatar {
+            background: white;
+            color: #2563eb;
+        }
+
+        .user-details h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .user-details .stats {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .check-icon {
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .user-card.selected .check-icon {
+            opacity: 1;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #dee2e6;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .new-user-form {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .new-user-form.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .user-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <img src="icons/billar-stats-icon-96.png" alt="Billar" class="icon" style="width: 96px; height: 96px; display: block; margin: 0 auto 15px;">
+                <h1>Billar Stats</h1>
+                <p>Selecciona el teu usuari per començar</p>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <div id="loadingSection" class="loading">
+                <div class="spinner"></div>
+                <p>Carregant usuaris...</p>
+            </div>
+
+            <div id="mainSection" style="display: none;">
+                <div class="section">
+                    <div class="section-title">Usuaris Disponibles</div>
+                    <div id="userList" class="user-list"></div>
+                </div>
+
+                <button class="btn btn-success" id="btnContinuar" disabled onclick="continuarAmbUsuari()">
+                    Continuar →
+                </button>
+
+                <div class="divider">
+                    <span>O bé</span>
+                </div>
+
+                <button class="btn btn-secondary" onclick="toggleNewUserForm()">
+                    ➕ Crear Nou Usuari
+                </button>
+
+                <div id="newUserForm" class="new-user-form">
+                    <div class="divider"></div>
+                    <div class="section-title">Nou Usuari</div>
+
+                    <div class="input-group">
+                        <label>Nom *</label>
+                        <input type="text" id="inputNom" placeholder="Ex: Joan Garcia" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email (opcional)</label>
+                        <input type="email" id="inputEmail" placeholder="joan@example.com">
+                    </div>
+
+                    <button class="btn btn-success" onclick="crearNouUsuari()">
+                        ✓ Crear i Continuar
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="toggleNewUserForm()">
+                        Cancel·lar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let usuaris = [];
+        let modalitats = [];
+        let selectedUsuariId = null;
+        let selectedModalitatId = null;
+
+        // Inicialitzar
+        async function init() {
+            await carregarUsuaris();
+            await carregarModalitats();
+
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('mainSection').style.display = 'block';
+
+            // Comprovar si ja hi ha una configuració guardada
+            const config = getStoredConfig();
+            if (config && config.usuariId) {
+                // Redirigir directament a l'app
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Carregar usuaris des de l'API
+        async function carregarUsuaris() {
+            try {
+                const response = await fetch(`${API_BASE}/api/usuaris`);
+                if (!response.ok) throw new Error('Error carregant usuaris');
+
+                usuaris = await response.json();
+                renderUsuaris();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarAlerta('Error carregant usuaris. Si us plau, comprova que el servidor està funcionant.', 'error');
+            }
+        }
+
+        // Carregar modalitats des de l'API
+        async function carregarModalitats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/modalitats`);
+                if (!response.ok) throw new Error('Error carregant modalitats');
+
+                modalitats = await response.json();
+                renderModalitats();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarAlerta('Error carregant modalitats.', 'error');
+            }
+        }
+
+        // Renderitzar llista d'usuaris
+        function renderUsuaris() {
+            const userList = document.getElementById('userList');
+
+            if (usuaris.length === 0) {
+                userList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No hi ha usuaris. Crea\'n un!</p>';
+                return;
+            }
+
+            userList.innerHTML = usuaris.map(user => {
+                const initials = user.nom.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                return `
+                    <div class="user-card" onclick="selectUsuari(${user.id})">
+                        <div class="user-info">
+                            <div class="user-avatar">${initials}</div>
+                            <div class="user-details">
+                                <h3>${user.nom}</h3>
+                                <div class="stats">Tap per seleccionar</div>
+                            </div>
+                        </div>
+                        <span class="check-icon">✓</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Renderitzar modalitats (només seleccionar Tres Bandes per defecte)
+        function renderModalitats() {
+            // Seleccionar "Tres Bandes" per defecte si existeix
+            const tresBandes = modalitats.find(m => m.nom === 'Tres Bandes');
+            if (tresBandes) {
+                selectedModalitatId = tresBandes.id;
+            } else if (modalitats.length > 0) {
+                // Si no hi ha "Tres Bandes", agafar la primera modalitat
+                selectedModalitatId = modalitats[0].id;
+            }
+        }
+
+        // Seleccionar usuari
+        function selectUsuari(usuariId) {
+            selectedUsuariId = usuariId;
+
+            // Actualitzar UI
+            document.querySelectorAll('.user-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.user-card').classList.add('selected');
+
+            updateContinuarButton();
+        }
+
+        // Actualitzar estat del botó Continuar
+        function updateContinuarButton() {
+            const btn = document.getElementById('btnContinuar');
+            btn.disabled = !selectedUsuariId;
+        }
+
+        // Continuar amb l'usuari seleccionat
+        function continuarAmbUsuari() {
+            if (!selectedUsuariId) {
+                mostrarAlerta('Selecciona un usuari', 'error');
+                return;
+            }
+
+            if (!selectedModalitatId) {
+                mostrarAlerta('Error: No s\'ha pogut detectar cap modalitat', 'error');
+                return;
+            }
+
+            const usuari = usuaris.find(u => u.id === selectedUsuariId);
+            const modalitat = modalitats.find(m => m.id === selectedModalitatId);
+
+            if (!usuari || !modalitat) {
+                mostrarAlerta('Error: Usuari o modalitat no vàlids', 'error');
+                return;
+            }
+
+            // Guardar configuració
+            saveConfig(selectedUsuariId, selectedModalitatId, usuari.nom, modalitat.nom);
+
+            // Redirigir a l'app principal
+            window.location.href = 'index.html';
+        }
+
+        // Toggle formulari nou usuari
+        function toggleNewUserForm() {
+            const form = document.getElementById('newUserForm');
+            form.classList.toggle('show');
+        }
+
+        // Crear nou usuari
+        async function crearNouUsuari() {
+            const nom = document.getElementById('inputNom').value.trim();
+            const email = document.getElementById('inputEmail').value.trim();
+
+            if (!nom) {
+                mostrarAlerta('El nom és obligatori', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/usuaris`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nom, email })
+                });
+
+                if (!response.ok) throw new Error('Error creant usuari');
+
+                const nouUsuari = await response.json();
+
+                mostrarAlerta(`Usuari "${nouUsuari.nom}" creat correctament!`, 'success');
+
+                // Recarregar usuaris
+                await carregarUsuaris();
+
+                // Seleccionar el nou usuari automàticament
+                selectedUsuariId = nouUsuari.id;
+
+                // Tancar formulari
+                toggleNewUserForm();
+
+                // Netejar formulari
+                document.getElementById('inputNom').value = '';
+                document.getElementById('inputEmail').value = '';
+
+                // Marcar com a seleccionat
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.user-card');
+                    const newCard = Array.from(cards).find(card =>
+                        card.textContent.includes(nouUsuari.nom)
+                    );
+                    if (newCard) {
+                        newCard.classList.add('selected');
+                        updateContinuarButton();
+                    }
+                }, 100);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarAlerta('Error creant l\'usuari. Si us plau, torna-ho a intentar.', 'error');
+            }
+        }
+
+        // Guardar configuració al localStorage
+        function saveConfig(usuariId, modalitatId, usuariNom, modalitatNom) {
+            const config = {
+                usuariId,
+                modalitatId,
+                usuariNom,
+                modalitatNom,
+                lastUpdate: new Date().toISOString()
+            };
+            localStorage.setItem('billar_user_config', JSON.stringify(config));
+        }
+
+        // Obtenir configuració del localStorage
+        function getStoredConfig() {
+            const stored = localStorage.getItem('billar_user_config');
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 4000);
+        }
+
+        // Inicialitzar quan la pàgina estigui carregada
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

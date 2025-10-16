@@ -8,7 +8,22 @@ const STATIC_ASSETS = [
   './',
   './index.html',
   './chuecos.html',
-  './manifest.json'
+  './select-user.html',
+  './manage-users.html',
+  './manifest.json',
+  './config.js',
+  './navbar.js',
+  './icons/billar-stats-icon-32.png',
+  './icons/billar-stats-icon-48.png',
+  './icons/billar-stats-icon-72.png',
+  './icons/billar-stats-icon-96.png',
+  './icons/billar-stats-icon-128.png',
+  './icons/billar-stats-icon-152.png',
+  './icons/billar-stats-icon-167.png',
+  './icons/billar-stats-icon-180.png',
+  './icons/billar-stats-icon-192.png',
+  './icons/billar-stats-icon-512.png',
+  './icons/billar-stats-icon-1024.png'
 ];
 
 // Recursos externs (CDN)

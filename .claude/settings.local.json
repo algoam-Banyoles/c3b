@@ -3,7 +3,11 @@
     "allow": [
       "Bash(python:*)",
       "Bash(pip install openpyxl)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(test:*)",
+      "Read(//c/Users/algoa/Estadístiques/**)",
+      "Bash(mkdir:*)",
+      "Read(//c/Users/algoa/Downloads/icons//**)"
     ],
     "deny": [],
     "ask": []
