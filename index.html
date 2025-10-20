@@ -364,26 +364,27 @@
         
         .quick-stats {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             margin-bottom: 15px;
         }
-        
+
         .quick-stat {
             background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #2563eb;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #2563eb;
         }
-        
+
         .quick-stat-label {
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
+            line-height: 1.2;
         }
-        
+
         .quick-stat-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #333;
         }
@@ -517,7 +518,24 @@
             .stats-summary {
                 grid-template-columns: 1fr;
             }
-            
+
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .quick-stat {
+                padding: 8px;
+            }
+
+            .quick-stat-label {
+                font-size: 9px;
+            }
+
+            .quick-stat-value {
+                font-size: 14px;
+            }
+
             .sim-inputs, .form-grid {
                 grid-template-columns: 1fr;
             }
@@ -1669,15 +1687,27 @@
                 document.getElementById('quickStats').innerHTML = '';
                 return;
             }
-            
+
             const partides = PARTIDES_DATA.slice(start, end);
             const totalCar = partides.reduce((sum, p) => sum + p.caramboles, 0);
             const totalEnt = partides.reduce((sum, p) => sum + p.entrades, 0);
             const mitjana = totalCar / totalEnt;
-            
+
             const millor = partides.reduce((max, p) => p.mitjana > max ? p.mitjana : max, 0);
             const pitjor = partides.reduce((min, p) => p.mitjana < min ? p.mitjana : min, 1);
-            
+
+            // Calcular mitjana de les primeres 5 partides
+            const primeres5 = partides.slice(0, 5);
+            const carPrimeres5 = primeres5.reduce((sum, p) => sum + p.caramboles, 0);
+            const entPrimeres5 = primeres5.reduce((sum, p) => sum + p.entrades, 0);
+            const mitjanaPrimeres5 = entPrimeres5 > 0 ? carPrimeres5 / entPrimeres5 : 0;
+
+            // Calcular mitjana de les darreres 5 partides
+            const darreres5 = partides.slice(-5);
+            const carDarreres5 = darreres5.reduce((sum, p) => sum + p.caramboles, 0);
+            const entDarreres5 = darreres5.reduce((sum, p) => sum + p.entrades, 0);
+            const mitjanaDarreres5 = entDarreres5 > 0 ? carDarreres5 / entDarreres5 : 0;
+
             const statsHTML = `
                 <div class="quick-stat">
                     <div class="quick-stat-label">Mitjana</div>
@@ -1695,8 +1725,16 @@
                     <div class="quick-stat-label">Pitjor Mitjana</div>
                     <div class="quick-stat-value worst">${pitjor.toFixed(3)}</div>
                 </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Mitjana Primeres 5</div>
+                    <div class="quick-stat-value">${mitjanaPrimeres5.toFixed(3)}</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Mitjana Darreres 5</div>
+                    <div class="quick-stat-value">${mitjanaDarreres5.toFixed(3)}</div>
+                </div>
             `;
-            
+
             document.getElementById('quickStats').innerHTML = statsHTML;
         }
         
@@ -1732,6 +1770,24 @@
             document.getElementById('rangeEnd').textContent = `Partida ${PARTIDES_DATA[currentRange.end - 1].num}`;
         }
         
+        // Calcular línia de tendència (regressió lineal)
+        function calcularTendencia(values) {
+            const n = values.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+            for (let i = 0; i < n; i++) {
+                sumX += i;
+                sumY += values[i];
+                sumXY += i * values[i];
+                sumX2 += i * i;
+            }
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            return values.map((_, i) => slope * i + intercept);
+        }
+
         // Actualitzar el gràfic
         function updateChart() {
             if (PARTIDES_DATA.length === 0) {
@@ -1748,11 +1804,11 @@
             const partidesVisibles = PARTIDES_DATA.slice(currentRange.start, currentRange.end);
 
             console.log('Partides visibles:', partidesVisibles.map(p => p.num));
-            
+
             // Les etiquetes són sempre P1, P2, P3... per al rang seleccionat
             const labels = partidesVisibles.map(p => `P${p.num}`);
             const mitjanes = partidesVisibles.map(p => p.mitjana);
-            
+
             // Calcular mitjana acumulada progressiva dins del rang seleccionat
             const mitjanaAcumulada = partidesVisibles.map((p, idx) => {
                 const startIdx = Math.max(0, idx - 14); // Màxim 15 partides dins el rang
@@ -1762,6 +1818,9 @@
                 const totalEnt = partidesCalc.reduce((sum, part) => sum + part.entrades, 0);
                 return totalCar / totalEnt;
             });
+
+            // Calcular línia de tendència
+            const tendencia = calcularTendencia(mitjanes);
             
             const ctx = document.getElementById('evolutionChart').getContext('2d');
             
@@ -1793,6 +1852,17 @@
                             tension: 0.3,
                             pointRadius: 4,
                             pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Línia de Tendència',
+                            data: tendencia,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0,
+                            pointRadius: 0,
+                            pointHoverRadius: 0
                         }
                     ]
                 },
