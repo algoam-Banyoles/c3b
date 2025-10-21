@@ -1304,14 +1304,45 @@
             updateChart();
             updateManageStats();
 
-            // Registrar Service Worker per PWA (comentat temporalment per debug)
-            /*
+            // Registrar Service Worker per PWA
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(registration => console.log('Service Worker registrat correctament'))
+                    .then(registration => {
+                        console.log('Service Worker registrat correctament');
+
+                        // Comprovar actualitzacions cada 60 segons
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000);
+
+                        // Detectar quan hi ha una nova versió esperant
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Hi ha una nova versió disponible
+                                    console.log('Nova versió de l\'aplicació disponible!');
+
+                                    // Mostrar notificació o recarregar automàticament
+                                    if (confirm('Hi ha una nova versió disponible. Vols actualitzar ara?')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
                     .catch(error => console.log('Error registrant Service Worker:', error));
+
+                // Recarregar quan el nou SW prengui el control
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
             }
-            */
         }
         
         // Gestió de dades amb API del servidor
