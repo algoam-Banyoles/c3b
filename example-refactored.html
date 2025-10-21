@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemple Refactoritzat - Billar Stats</title>
+    
+    <!-- CSS Refactoritzat -->
+    <link rel="stylesheet" href="public/css/variables.css">
+    <link rel="stylesheet" href="public/css/components.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Serveis Refactoritzats -->
+    <script src="public/js/api.service.js"></script>
+    <script src="public/js/stats.service.js"></script>
+    <script src="public/js/chart.service.js"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2><span class="icon">🎱</span> Exemple d'Ús dels Serveis Refactoritzats</h2>
+            
+            <div id="alertBox" class="alert"></div>
+            
+            <button class="btn" onclick="exempleApiService()">
+                1️⃣ Provar ApiService
+            </button>
+            
+            <button class="btn btn-success" onclick="exempleStatsService()">
+                2️⃣ Provar StatsService
+            </button>
+            
+            <button class="btn btn-warning" onclick="exempleChartService()">
+                3️⃣ Provar ChartService
+            </button>
+            
+            <div id="results" style="margin-top: 20px; padding: 15px; background: #f9fafb; border-radius: 10px; display: none;">
+                <h3 style="color: #1e40af; margin-bottom: 10px;">Resultats:</h3>
+                <pre id="resultsContent" style="overflow-x: auto; font-size: 12px;"></pre>
+            </div>
+            
+            <div id="chartContainer" style="margin-top: 20px; display: none;">
+                <h3 style="color: #1e40af; margin-bottom: 10px;">Gràfic d'Evolució:</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="exampleChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funcions d'exemple
+        
+        async function exempleApiService() {
+            mostrarAlerta('Carregant dades amb ApiService...', 'info');
+            
+            try {
+                // Obtenir usuaris
+                const usuaris = await apiService.getUsuaris();
+                console.log('✅ Usuaris:', usuaris);
+                
+                // Obtenir modalitats
+                const modalitats = await apiService.getModalitats();
+                console.log('✅ Modalitats:', modalitats);
+                
+                // Obtenir partides (si hi ha configuració)
+                const config = BillarConfig.getConfig();
+                if (config) {
+                    const partides = await apiService.getPartides({
+                        usuari_id: config.usuariId,
+                        modalitat_id: config.modalitatId
+                    });
+                    console.log('✅ Partides:', partides);
+                    
+                    mostrarResultats({
+                        usuaris: usuaris.length,
+                        modalitats: modalitats.length,
+                        partides: partides.length,
+                        exempleUsuari: usuaris[0],
+                        exemplePartida: partides[0]
+                    });
+                    
+                    mostrarAlerta(`✅ Dades carregades: ${usuaris.length} usuaris, ${modalitats.length} modalitats, ${partides.length} partides`, 'success');
+                } else {
+                    mostrarResultats({
+                        usuaris: usuaris.length,
+                        modalitats: modalitats.length,
+                        nota: 'Selecciona un usuari per veure les partides'
+                    });
+                    
+                    mostrarAlerta(`✅ Dades carregades: ${usuaris.length} usuaris, ${modalitats.length} modalitats`, 'success');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                mostrarAlerta('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function exempleStatsService() {
+            mostrarAlerta('Calculant estadístiques amb StatsService...', 'info');
+            
+            try {
+                const config = BillarConfig.getConfig();
+                if (!config) {
+                    mostrarAlerta('⚠️ Primer has de seleccionar un usuari', 'warning');
+                    return;
+                }
+                
+                // Carregar partides
+                const partides = await apiService.getPartides({
+                    usuari_id: config.usuariId,
+                    modalitat_id: config.modalitatId
+                });
+                
+                if (partides.length === 0) {
+                    mostrarAlerta('⚠️ No hi ha partides per analitzar', 'warning');
+                    return;
+                }
+                
+                // Calcular estadístiques globals
+                const stats = StatsService.getEstadistiquesGlobals(partides);
+                
+                // Calcular estadístiques d'un rang
+                const statsRang = StatsService.getEstadistiquesRang(partides, 0, Math.min(15, partides.length));
+                
+                // Simular una nova partida
+                const simulacio = StatsService.simularNovaPartida(partides, 30, 45, 15);
+                
+                mostrarResultats({
+                    estadistiquesGlobals: stats,
+                    estadistiquesRang: statsRang,
+                    simulacio: simulacio
+                });
+                
+                mostrarAlerta('✅ Estadístiques calculades correctament!', 'success');
+            } catch (error) {
+                console.error('❌ Error:', error);
+                mostrarAlerta('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function exempleChartService() {
+            mostrarAlerta('Creant gràfic amb ChartService...', 'info');
+            
+            try {
+                const config = BillarConfig.getConfig();
+                if (!config) {
+                    mostrarAlerta('⚠️ Primer has de seleccionar un usuari', 'warning');
+                    return;
+                }
+                
+                // Carregar partides
+                const partides = await apiService.getPartides({
+                    usuari_id: config.usuariId,
+                    modalitat_id: config.modalitatId
+                });
+                
+                if (partides.length === 0) {
+                    mostrarAlerta('⚠️ No hi ha partides per graficar', 'warning');
+                    return;
+                }
+                
+                // Mostrar contenidor del gràfic
+                document.getElementById('chartContainer').style.display = 'block';
+                
+                // Crear gràfic
+                const partidesVisibles = partides.slice(-15); // Últimes 15
+                chartService.createEvolutionChart('exampleChart', partidesVisibles, {
+                    showTrend: true,
+                    showAccumulated: true,
+                    maxPartides: 15
+                });
+                
+                mostrarAlerta('✅ Gràfic creat correctament!', 'success');
+            } catch (error) {
+                console.error('❌ Error:', error);
+                mostrarAlerta('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Funcions auxiliars
+        
+        function mostrarResultats(data) {
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.textContent = JSON.stringify(data, null, 2);
+            resultsDiv.style.display = 'block';
+        }
+        
+        function mostrarAlerta(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    alertBox.classList.remove('show');
+                }, 5000);
+            }
+        }
+        
+        // Verificar configuració a l'inici
+        window.addEventListener('load', () => {
+            const config = BillarConfig.getConfig();
+            if (!config) {
+                mostrarAlerta('⚠️ No hi ha usuari seleccionat. Algunes funcions estaran limitades.', 'warning');
+            } else {
+                mostrarAlerta(`👤 Usuari: ${config.usuariNom} | 🎯 Modalitat: ${config.modalitatNom}`, 'info');
+            }
+        });
+    </script>
+</body>
+</html>
