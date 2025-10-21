@@ -516,7 +516,25 @@
         
         @media (max-width: 600px) {
             .stats-summary {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 10px;
+            }
+
+            .stat-card .label {
+                font-size: 10px;
+                margin-bottom: 3px;
+            }
+
+            .stat-card .value {
+                font-size: 20px;
+            }
+
+            .stat-card .subvalue {
+                font-size: 11px;
             }
 
             .quick-stats {
