@@ -1748,16 +1748,29 @@
             partides.forEach(p => {
                 if (!p.competicio || !p.oponent || p.oponent.trim() === '') return;
 
-                const comp = p.competicio;
-                if (tipus[comp]) {
-                    tipus[comp].partides.push(p);
-                    tipus[comp].puntsDisputats += 2;
+                // Determinar tipus de competició (similar a la detecció de la taula)
+                const comp = p.competicio.toLowerCase();
+                let tipusDetectat = null;
+
+                if (comp.includes('liga') || comp.includes('lliga')) {
+                    tipusDetectat = 'Lliga';
+                } else if (comp.includes('open')) {
+                    tipusDetectat = 'Open';
+                } else if (comp.includes('individual') || comp.includes('catalunya')) {
+                    tipusDetectat = 'Individual';
+                } else if (comp.includes('copa')) {
+                    tipusDetectat = 'Copa';
+                }
+
+                if (tipusDetectat && tipus[tipusDetectat]) {
+                    tipus[tipusDetectat].partides.push(p);
+                    tipus[tipusDetectat].puntsDisputats += 2;
 
                     // Calcular punts guanyats
                     if (p.caramboles > p.caramboles_oponent) {
-                        tipus[comp].puntsGuanyats += 2; // Victòria
+                        tipus[tipusDetectat].puntsGuanyats += 2; // Victòria
                     } else if (p.caramboles === p.caramboles_oponent) {
-                        tipus[comp].puntsGuanyats += 1; // Empat
+                        tipus[tipusDetectat].puntsGuanyats += 1; // Empat
                     }
                 }
             });
