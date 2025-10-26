@@ -1764,13 +1764,19 @@
 
                 if (tipusDetectat && tipus[tipusDetectat]) {
                     tipus[tipusDetectat].partides.push(p);
-                    tipus[tipusDetectat].puntsDisputats += 2;
+
+                    // Copa té sistema de puntuació diferent: 3-1-0
+                    // Resta de competicions: 2-1-0
+                    const puntsVictoria = (tipusDetectat === 'Copa') ? 3 : 2;
+                    const puntsEmpat = 1;
+
+                    tipus[tipusDetectat].puntsDisputats += puntsVictoria;
 
                     // Calcular punts guanyats
                     if (p.caramboles > p.caramboles_oponent) {
-                        tipus[tipusDetectat].puntsGuanyats += 2; // Victòria
+                        tipus[tipusDetectat].puntsGuanyats += puntsVictoria; // Victòria
                     } else if (p.caramboles === p.caramboles_oponent) {
-                        tipus[tipusDetectat].puntsGuanyats += 1; // Empat
+                        tipus[tipusDetectat].puntsGuanyats += puntsEmpat; // Empat
                     }
                 }
             });
@@ -1829,6 +1835,23 @@
             // Fiabilitat per tipus de competició
             const fiabilitatPerTipus = calcularFiabilitatPerTipus(PARTIDES_DATA);
 
+            // Filtrar partides de la temporada actual
+            const ara = new Date();
+            const mesActual = ara.getMonth() + 1;
+            const anyActual = ara.getFullYear();
+            const temporadaActual = mesActual >= 8 ? `${anyActual}-${anyActual + 1}` : `${anyActual - 1}-${anyActual}`;
+
+            const partidesTemporadaActual = PARTIDES_DATA.filter(p => {
+                if (!p.data) return false;
+                const data = new Date(p.data);
+                const mes = data.getMonth() + 1;
+                const any = data.getFullYear();
+                const temporada = mes >= 8 ? `${any}-${any + 1}` : `${any - 1}-${any}`;
+                return temporada === temporadaActual;
+            });
+
+            const fiabilitatPerTipusTemporadaActual = calcularFiabilitatPerTipus(partidesTemporadaActual);
+
             const statsHTML = `
                 <div class="stat-card">
                     <div class="label">Partides Totals</div>
@@ -1883,9 +1906,23 @@
                 ` : ''}
                 ${fiabilitatPerTipus.length > 0 ? `
                 <div class="stat-card" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); grid-column: 1 / -1;">
-                    <div class="label" style="font-size: 12px; margin-bottom: 8px;">🎯 Fiabilitat per Tipus</div>
+                    <div class="label" style="font-size: 12px; margin-bottom: 8px;">🎯 Efectivitat per Competició</div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
                         ${fiabilitatPerTipus.map(t => `
+                            <div style="background: rgba(255,255,255,0.15); padding: 8px; border-radius: 6px;">
+                                <div style="font-size: 10px; opacity: 0.9; margin-bottom: 2px;">${t.tipus} (${t.partides})</div>
+                                <div style="font-size: 16px; font-weight: bold;">${t.fiabilitat.toFixed(1)}%</div>
+                                <div style="font-size: 9px; opacity: 0.85; margin-top: 2px;">${t.puntsGuanyats}/${t.puntsDisputats}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                ${fiabilitatPerTipusTemporadaActual.length > 0 ? `
+                <div class="stat-card" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); grid-column: 1 / -1;">
+                    <div class="label" style="font-size: 12px; margin-bottom: 8px;">🎯 Efectivitat per Competició (${temporadaActual})</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+                        ${fiabilitatPerTipusTemporadaActual.map(t => `
                             <div style="background: rgba(255,255,255,0.15); padding: 8px; border-radius: 6px;">
                                 <div style="font-size: 10px; opacity: 0.9; margin-bottom: 2px;">${t.tipus} (${t.partides})</div>
                                 <div style="font-size: 16px; font-weight: bold;">${t.fiabilitat.toFixed(1)}%</div>

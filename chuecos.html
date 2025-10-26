@@ -2607,13 +2607,19 @@ updateChart();
 
                 if (tipusDetectat && tipus[tipusDetectat]) {
                     tipus[tipusDetectat].partides.push(p);
-                    tipus[tipusDetectat].puntsDisputats += 2;
+
+                    // Copa té sistema de puntuació diferent: 3-1-0
+                    // Resta de competicions: 2-1-0
+                    const puntsVictoria = (tipusDetectat === 'Copa') ? 3 : 2;
+                    const puntsEmpat = 1;
+
+                    tipus[tipusDetectat].puntsDisputats += puntsVictoria;
 
                     // Calcular punts guanyats
                     if (p.caramboles > p.caramboles_oponent) {
-                        tipus[tipusDetectat].puntsGuanyats += 2; // Victòria
+                        tipus[tipusDetectat].puntsGuanyats += puntsVictoria; // Victòria
                     } else if (p.caramboles === p.caramboles_oponent) {
-                        tipus[tipusDetectat].puntsGuanyats += 1; // Empat
+                        tipus[tipusDetectat].puntsGuanyats += puntsEmpat; // Empat
                     }
                 }
             });
@@ -2726,7 +2732,7 @@ updateChart();
                 ` : ''}
                 ${fiabilitatPerTipus.length > 0 ? `
                 <div class="stat-card" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); grid-column: 1 / -1;">
-                    <div class="label" style="font-size: 12px; margin-bottom: 8px;">🎯 Fiabilitat per Tipus</div>
+                    <div class="label" style="font-size: 12px; margin-bottom: 8px;">🎯 Efectivitat per Competició</div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
                         ${fiabilitatPerTipus.map(t => `
                             <div style="background: rgba(255,255,255,0.15); padding: 8px; border-radius: 6px;">
