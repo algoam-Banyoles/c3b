@@ -652,6 +652,7 @@
                                 <th>#</th>
                                 <th>Data</th>
                                 <th>Oponent</th>
+                                <th>Tipus</th>
                                 <th>C</th>
                                 <th>C.Op</th>
                                 <th>E</th>
@@ -750,6 +751,16 @@
                     <div class="input-group form-grid-full">
                         <label>Equip</label>
                         <input type="text" id="formEquip" placeholder="Ex: C. B. Sant Adrià">
+                    </div>
+                    <div class="input-group">
+                        <label>Tipus de Competició</label>
+                        <select id="formTipus">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Liga">Liga</option>
+                            <option value="Open">Open</option>
+                            <option value="Individual">Individual/Catalunya</option>
+                            <option value="Copa">Copa</option>
+                        </select>
                     </div>
                     <div class="input-group">
                         <label>Caramboles (teves) *</label>
@@ -1510,6 +1521,7 @@
             document.getElementById('formCarambolesOponent').value = partida.caramboles_oponent || '';
             document.getElementById('formSerieMajor').value = partida.serie_major || '';
             document.getElementById('formUrlVideo').value = partida.url_video || '';
+            document.getElementById('formTipus').value = partida.competicio || '';
 
             document.getElementById('partidaModal').classList.add('show');
         }
@@ -1527,7 +1539,7 @@
             const carambolesOponent = parseInt(document.getElementById('formCarambolesOponent').value) || 0;
             const serieMajor = parseInt(document.getElementById('formSerieMajor').value) || null;
             const urlVideo = document.getElementById('formUrlVideo').value.trim() || null;
-            const competicio = document.getElementById('formCompeticio')?.value || null;
+            const tipusCompeticio = document.getElementById('formTipus')?.value || null;
 
             const partida = {
                 num: editingIndex >= 0 ? PARTIDES_DATA[editingIndex].num : (PARTIDES_DATA.length > 0 ? Math.max(...PARTIDES_DATA.map(p => p.num)) + 1 : 1),
@@ -1535,7 +1547,7 @@
                 lloc: document.getElementById('formLloc').value || null,
                 oponent: document.getElementById('formOponent').value,
                 equip: document.getElementById('formEquip').value || null,
-                competicio: competicio,
+                competicio: tipusCompeticio,
                 caramboles: caramboles,
                 caramboles_oponent: carambolesOponent,
                 entrades: entrades,
@@ -1660,6 +1672,70 @@
             };
         }
 
+        // Trobar rival més freqüent amb estadístiques
+        function trobarRivalMesFrequent(partides) {
+            const rivals = {};
+
+            partides.forEach(p => {
+                if (p.oponent && p.oponent.trim() !== '') {
+                    if (!rivals[p.oponent]) {
+                        rivals[p.oponent] = { victories: 0, empats: 0, derrotes: 0, total: 0 };
+                    }
+                    rivals[p.oponent].total++;
+
+                    if (p.caramboles > p.caramboles_oponent) rivals[p.oponent].victories++;
+                    else if (p.caramboles === p.caramboles_oponent) rivals[p.oponent].empats++;
+                    else rivals[p.oponent].derrotes++;
+                }
+            });
+
+            // Trobar el rival amb més partides
+            let rivalMesFrequent = null;
+            let maxPartides = 0;
+
+            for (const [nom, stats] of Object.entries(rivals)) {
+                if (stats.total > maxPartides) {
+                    maxPartides = stats.total;
+                    rivalMesFrequent = { nom, ...stats };
+                }
+            }
+
+            return rivalMesFrequent;
+        }
+
+        // Calcular mitjanes per temporada (agost-juliol)
+        function calcularMitjanesPerTemporada(partides) {
+            const temporades = {};
+
+            partides.forEach(p => {
+                if (!p.data) return;
+
+                const data = new Date(p.data);
+                const mes = data.getMonth() + 1; // 1-12
+                const any = data.getFullYear();
+
+                // Determinar temporada: si mes >= 8 (agost), temporada actual; si < 8, temporada anterior
+                const temporada = mes >= 8 ? `${any}-${any + 1}` : `${any - 1}-${any}`;
+
+                if (!temporades[temporada]) {
+                    temporades[temporada] = { caramboles: 0, entrades: 0, partides: 0 };
+                }
+
+                temporades[temporada].caramboles += p.caramboles;
+                temporades[temporada].entrades += p.entrades;
+                temporades[temporada].partides++;
+            });
+
+            // Convertir a array i calcular mitjanes
+            return Object.entries(temporades).map(([nom, stats]) => ({
+                temporada: nom,
+                mitjana: stats.entrades > 0 ? stats.caramboles / stats.entrades : 0,
+                partides: stats.partides,
+                caramboles: stats.caramboles,
+                entrades: stats.entrades
+            })).sort((a, b) => b.temporada.localeCompare(a.temporada)); // Més recent primer
+        }
+
         // Estadístiques globals
         function updateGlobalStats() {
             const totalPartides = PARTIDES_DATA.length;
@@ -1692,6 +1768,12 @@
             const millorPartida = PARTIDES_DATA.reduce((max, p) => p.mitjana > max.mitjana ? p : max);
             const pitjorPartida = PARTIDES_DATA.reduce((min, p) => p.mitjana < min.mitjana ? p : min);
 
+            // Rival més freqüent
+            const rivalFrequent = trobarRivalMesFrequent(PARTIDES_DATA);
+
+            // Mitjanes per temporada
+            const mitjanesTemporada = calcularMitjanesPerTemporada(PARTIDES_DATA);
+
             const statsHTML = `
                 <div class="stat-card">
                     <div class="label">Partides Totals</div>
@@ -1708,11 +1790,6 @@
                     <div class="value">${mitjanaGlobal.toFixed(3)}</div>
                     <div class="subvalue">${totalCaramboles} caramboles</div>
                 </div>
-                <div class="stat-card">
-                    <div class="label">Últimes ${ultimes15.length}</div>
-                    <div class="value">${mitjana15.toFixed(3)}</div>
-                    <div class="subvalue">${punts15.puntsGuanyats}/${punts15.puntsDisputats} punts</div>
-                </div>
                 <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                     <div class="label" style="font-size: 11px; margin-bottom: 3px;">🏆 Millor Partida</div>
                     <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${millorPartida.oponent}</div>
@@ -1725,6 +1802,30 @@
                     <div class="value" style="font-size: 20px;">${pitjorPartida.mitjana.toFixed(3)}</div>
                     <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${pitjorPartida.caramboles}/${pitjorPartida.entrades}</div>
                 </div>
+                ${rivalFrequent ? `
+                <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <div class="label" style="font-size: 11px; margin-bottom: 3px;">🎯 Rival Habitual</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${rivalFrequent.nom}</div>
+                    <div class="value" style="font-size: 20px;">${rivalFrequent.total} partides</div>
+                    <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${rivalFrequent.victories}V - ${rivalFrequent.empats}E - ${rivalFrequent.derrotes}D</div>
+                </div>
+                ` : ''}
+                ${mitjanesTemporada.length > 0 ? `
+                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <div class="label" style="font-size: 11px; margin-bottom: 3px;">📅 Temporada Actual ${mitjanesTemporada[0].temporada}</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${mitjanesTemporada[0].partides} partides</div>
+                    <div class="value" style="font-size: 20px;">${mitjanesTemporada[0].mitjana.toFixed(3)}</div>
+                    <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${mitjanesTemporada[0].caramboles}/${mitjanesTemporada[0].entrades}</div>
+                </div>
+                ` : ''}
+                ${mitjanesTemporada.length > 1 ? `
+                <div class="stat-card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <div class="label" style="font-size: 11px; margin-bottom: 3px;">📅 Temporada Anterior ${mitjanesTemporada[1].temporada}</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${mitjanesTemporada[1].partides} partides</div>
+                    <div class="value" style="font-size: 20px;">${mitjanesTemporada[1].mitjana.toFixed(3)}</div>
+                    <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${mitjanesTemporada[1].caramboles}/${mitjanesTemporada[1].entrades}</div>
+                </div>
+                ` : ''}
             `;
 
             document.getElementById('globalStats').innerHTML = statsHTML;
@@ -1757,6 +1858,12 @@
             const entDarreres5 = darreres5.reduce((sum, p) => sum + p.entrades, 0);
             const mitjanaDarreres5 = entDarreres5 > 0 ? carDarreres5 / entDarreres5 : 0;
 
+            // Calcular fiabilitat (punts guanyats / punts disputats)
+            const estatsPunts = calcularEstadistiquesPunts(partides);
+            const fiabilitat = estatsPunts.puntsDisputats > 0
+                ? (estatsPunts.puntsGuanyats / estatsPunts.puntsDisputats) * 100
+                : 0;
+
             const statsHTML = `
                 <div class="quick-stat">
                     <div class="quick-stat-label">Mitjana</div>
@@ -1765,6 +1872,10 @@
                 <div class="quick-stat">
                     <div class="quick-stat-label">Caramboles/Entrades</div>
                     <div class="quick-stat-value">${totalCar}/${totalEnt}</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-label">Fiabilitat</div>
+                    <div class="quick-stat-value">${fiabilitat.toFixed(1)}% (${estatsPunts.puntsGuanyats}/${estatsPunts.puntsDisputats})</div>
                 </div>
                 <div class="quick-stat">
                     <div class="quick-stat-label">Millor Mitjana</div>
@@ -1858,11 +1969,17 @@
             const labels = partidesVisibles.map(p => `P${p.num}`);
             const mitjanes = partidesVisibles.map(p => p.mitjana);
 
-            // Calcular mitjana acumulada progressiva dins del rang seleccionat
+            // Calcular mitjana acumulada de les últimes 15 partides
+            // Per cada punt, calculem la mitjana de les 15 partides anteriors (incloent la partida actual)
             const mitjanaAcumulada = partidesVisibles.map((p, idx) => {
-                const startIdx = Math.max(0, idx - 14); // Màxim 15 partides dins el rang
-                const endIdx = idx + 1;
-                const partidesCalc = partidesVisibles.slice(startIdx, endIdx);
+                // L'índex global de la partida actual dins PARTIDES_DATA
+                const globalIdx = currentRange.start + idx;
+
+                // Calcular les últimes 15 partides fins aquest punt (des de PARTIDES_DATA global)
+                const startIdx = Math.max(0, globalIdx - 14); // 14 partides anteriors + la actual = 15
+                const endIdx = globalIdx + 1;
+                const partidesCalc = PARTIDES_DATA.slice(startIdx, endIdx);
+
                 const totalCar = partidesCalc.reduce((sum, part) => sum + part.caramboles, 0);
                 const totalEnt = partidesCalc.reduce((sum, part) => sum + part.entrades, 0);
                 return totalCar / totalEnt;
@@ -1942,12 +2059,18 @@
                                     const partida = partidesVisibles[idx];
 
                                     if (context.datasetIndex === 0) {
+                                        // Mitjana per partida
                                         return `Partida: ${partida.caramboles}/${partida.entrades} = ${partida.mitjana.toFixed(3)}`;
-                                    } else {
-                                        const numPartides = Math.min(idx + 1, 15);
-                                        const startP = partida.num - numPartides + 1;
+                                    } else if (context.datasetIndex === 1) {
+                                        // Mitjana acumulada últimes 15
+                                        const globalIdx = currentRange.start + idx;
+                                        const numPartides = Math.min(globalIdx + 1, 15);
+                                        const startP = Math.max(1, partida.num - numPartides + 1);
                                         const endP = partida.num;
                                         return `Mitjana últimes ${numPartides} (P${startP}-P${endP}): ${context.parsed.y.toFixed(3)}`;
+                                    } else {
+                                        // Línia de tendència
+                                        return `Tendència: ${context.parsed.y.toFixed(3)}`;
                                     }
                                 }
                             }
@@ -1972,14 +2095,14 @@
             const tbody = document.getElementById('partidesTableBody');
             
             if (PARTIDES_DATA.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 30px; color: #999;">No hi ha partides. Afegeix la primera! ➕</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 30px; color: #999;">No hi ha partides. Afegeix la primera! ➕</td></tr>';
                 return;
             }
-            
+
             // Trobar millor i pitjor mitjana
             const millor = Math.max(...PARTIDES_DATA.map(p => p.mitjana));
             const pitjor = Math.min(...PARTIDES_DATA.map(p => p.mitjana));
-            
+
             const rows = PARTIDES_DATA.slice().reverse().map((p, reverseIdx) => {
                 const originalIdx = PARTIDES_DATA.length - 1 - reverseIdx;
                 const isBest = p.mitjana === millor;
@@ -2000,11 +2123,22 @@
                     resultatClass = 'worst';
                 }
 
+                // Determinar tipus de competició
+                let tipusComp = '-';
+                if (p.competicio) {
+                    const comp = p.competicio.toLowerCase();
+                    if (comp.includes('liga') || comp.includes('lliga')) tipusComp = 'L';
+                    else if (comp.includes('open')) tipusComp = 'O';
+                    else if (comp.includes('individual') || comp.includes('catalunya')) tipusComp = 'I';
+                    else if (comp.includes('copa')) tipusComp = 'C';
+                }
+
                 return `
                     <tr>
                         <td><strong>${p.num}</strong></td>
                         <td>${p.data ? new Date(p.data).toLocaleDateString('ca-ES', {day: '2-digit', month: '2-digit', year: '2-digit'}) : '-'}</td>
                         <td style="font-size: 12px;">${p.oponent || '-'}</td>
+                        <td style="text-align: center; font-weight: bold; color: #2563eb;">${tipusComp}</td>
                         <td><strong>${p.caramboles}</strong></td>
                         <td style="color: #999;">${p.caramboles_oponent || '-'}</td>
                         <td>${p.entrades}</td>
