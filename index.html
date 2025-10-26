@@ -756,7 +756,7 @@
                         <label>Tipus de Competició</label>
                         <select id="formTipus">
                             <option value="">-- Selecciona --</option>
-                            <option value="Liga">Liga</option>
+                            <option value="Lliga">Lliga</option>
                             <option value="Open">Open</option>
                             <option value="Individual">Individual/Catalunya</option>
                             <option value="Copa">Copa</option>
@@ -1736,6 +1736,45 @@
             })).sort((a, b) => b.temporada.localeCompare(a.temporada)); // Més recent primer
         }
 
+        // Calcular fiabilitat per tipus de competició
+        function calcularFiabilitatPerTipus(partides) {
+            const tipus = {
+                'Lliga': { partides: [], puntsGuanyats: 0, puntsDisputats: 0 },
+                'Open': { partides: [], puntsGuanyats: 0, puntsDisputats: 0 },
+                'Individual': { partides: [], puntsGuanyats: 0, puntsDisputats: 0 },
+                'Copa': { partides: [], puntsGuanyats: 0, puntsDisputats: 0 }
+            };
+
+            partides.forEach(p => {
+                if (!p.competicio || !p.oponent || p.oponent.trim() === '') return;
+
+                const comp = p.competicio;
+                if (tipus[comp]) {
+                    tipus[comp].partides.push(p);
+                    tipus[comp].puntsDisputats += 2;
+
+                    // Calcular punts guanyats
+                    if (p.caramboles > p.caramboles_oponent) {
+                        tipus[comp].puntsGuanyats += 2; // Victòria
+                    } else if (p.caramboles === p.caramboles_oponent) {
+                        tipus[comp].puntsGuanyats += 1; // Empat
+                    }
+                }
+            });
+
+            // Calcular fiabilitat percentual
+            return Object.entries(tipus)
+                .filter(([_, stats]) => stats.puntsDisputats > 0)
+                .map(([nom, stats]) => ({
+                    tipus: nom,
+                    fiabilitat: (stats.puntsGuanyats / stats.puntsDisputats) * 100,
+                    puntsGuanyats: stats.puntsGuanyats,
+                    puntsDisputats: stats.puntsDisputats,
+                    partides: stats.partides.length
+                }))
+                .sort((a, b) => b.fiabilitat - a.fiabilitat); // Ordenar per fiabilitat descendent
+        }
+
         // Estadístiques globals
         function updateGlobalStats() {
             const totalPartides = PARTIDES_DATA.length;
@@ -1773,6 +1812,9 @@
 
             // Mitjanes per temporada
             const mitjanesTemporada = calcularMitjanesPerTemporada(PARTIDES_DATA);
+
+            // Fiabilitat per tipus de competició
+            const fiabilitatPerTipus = calcularFiabilitatPerTipus(PARTIDES_DATA);
 
             const statsHTML = `
                 <div class="stat-card">
@@ -1824,6 +1866,20 @@
                     <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${mitjanesTemporada[1].partides} partides</div>
                     <div class="value" style="font-size: 20px;">${mitjanesTemporada[1].mitjana.toFixed(3)}</div>
                     <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${mitjanesTemporada[1].caramboles}/${mitjanesTemporada[1].entrades}</div>
+                </div>
+                ` : ''}
+                ${fiabilitatPerTipus.length > 0 ? `
+                <div class="stat-card" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); grid-column: 1 / -1;">
+                    <div class="label" style="font-size: 12px; margin-bottom: 8px;">🎯 Fiabilitat per Tipus</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+                        ${fiabilitatPerTipus.map(t => `
+                            <div style="background: rgba(255,255,255,0.15); padding: 8px; border-radius: 6px;">
+                                <div style="font-size: 10px; opacity: 0.9; margin-bottom: 2px;">${t.tipus} (${t.partides})</div>
+                                <div style="font-size: 16px; font-weight: bold;">${t.fiabilitat.toFixed(1)}%</div>
+                                <div style="font-size: 9px; opacity: 0.85; margin-top: 2px;">${t.puntsGuanyats}/${t.puntsDisputats}</div>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
                 ` : ''}
             `;
