@@ -345,8 +345,40 @@ const BillarConfig = {
             console.error('Error creant modalitat:', error);
             throw error;
         }
+    },
+
+    /**
+     * Keep-alive: Ping a Supabase cada 24h per evitar hibernació
+     */
+    initKeepAlive() {
+        // Fer un ping inicial al carregar
+        this.sendKeepAlivePing();
+
+        // Després, ping cada 24 hores
+        setInterval(() => {
+            this.sendKeepAlivePing();
+        }, 24 * 60 * 60 * 1000); // 24 hores en ms
+    },
+
+    /**
+     * Enviar ping a la BD
+     */
+    async sendKeepAlivePing() {
+        try {
+            await fetch(`${this.API_BASE}/api/usuaris`);
+            console.log('✅ Keep-alive ping enviado a Supabase');
+        } catch (error) {
+            console.log('⚠️ Keep-alive ping failed:', error.message);
+        }
     }
 };
+
+// Auto-inicialitzar keep-alive al carregar config.js
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', () => {
+        BillarConfig.initKeepAlive();
+    });
+}
 
 // Exportar per utilitzar a altres scripts
 if (typeof module !== 'undefined' && module.exports) {
