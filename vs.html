@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparativa · Estadístiques de billar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/billar-stats-icon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/billar-stats-icon-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/billar-stats-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/billar-stats-icon-180.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js"></script>
+    <script src="navbar.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1f2937;
+        }
+        .container { max-width: 980px; margin: 0 auto; }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .header h1 { font-size: 22px; color: #1e3a8a; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .selectors {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+        .selectors select {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+        }
+        .selectors select:focus { border-color: #3b82f6; outline: none; }
+        .vs-badge {
+            font-size: 24px;
+            font-weight: 800;
+            color: #3b82f6;
+            text-align: center;
+        }
+
+        .modality-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .modality-btn {
+            flex: 1;
+            min-width: 90px;
+            padding: 10px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+        .modality-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+        .modality-btn.active {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border-color: #1e3a8a;
+            color: white;
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        .compare-row {
+            display: contents;
+        }
+        .compare-row > div {
+            padding: 12px 14px;
+            font-size: 14px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .compare-row > div:first-child { text-align: right; padding-right: 18px; }
+        .compare-row > div:last-child  { text-align: left;  padding-left: 18px; }
+        .compare-label {
+            text-align: center !important;
+            font-size: 11px !important;
+            text-transform: uppercase;
+            color: #9ca3af;
+            letter-spacing: 0.5px;
+            grid-column: 1 / -1;
+            border-bottom: none !important;
+            padding-bottom: 2px !important;
+            padding-top: 10px !important;
+        }
+        .winner { font-weight: 700; color: #059669; }
+        .loser  { color: #6b7280; }
+
+        .player-headers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            margin-bottom: 8px;
+        }
+        .player-headers > div {
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #1e3a8a;
+            padding: 8px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-top: 8px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 30px;
+            font-style: italic;
+        }
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            font-size: 16px;
+        }
+
+        #navbarModalitats { display: none !important; }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .selectors { grid-template-columns: 1fr; }
+            .vs-badge { display: none; }
+            .compare-row > div { font-size: 13px; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="loading">Carregant comparativa...</div>
+        <div id="content" style="display:none;">
+            <div class="header">
+                <h1>⚖️ Comparativa entre jugadors</h1>
+            </div>
+
+            <div class="card">
+                <div class="selectors">
+                    <select id="selA"></select>
+                    <div class="vs-badge">VS</div>
+                    <select id="selB"></select>
+                </div>
+                <div class="modality-row" id="modalityRow"></div>
+            </div>
+
+            <div class="card">
+                <div class="player-headers">
+                    <div id="nameA">—</div>
+                    <div id="nameB">—</div>
+                </div>
+                <div class="compare-grid" id="compareGrid"></div>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size: 14px; color: #6b7280; margin-bottom: 6px;">Evolució de la mitjana mòbil</h3>
+                <div class="chart-container">
+                    <canvas id="evoChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ----------------------------------------------------------------------------
+// Comparativa entre dos jugadors per modalitat
+// ----------------------------------------------------------------------------
+
+const TRES_BANDES_NAMES = ['3 Bandes', 'Tres Bandes'];
+let USUARIS = [];
+let MODALITATS = [];
+let selectedA = null, selectedB = null;
+let selectedMod = null;
+let cacheData = {}; // (usuariId, modalitatId) -> partides[]
+let evoChart = null;
+
+async function init() {
+    const cfg = BillarConfig.requireUser();
+    if (!cfg) return;
+
+    try {
+        [USUARIS, MODALITATS] = await Promise.all([
+            fetchJson('/api/usuaris'),
+            fetchJson('/api/modalitats'),
+        ]);
+    } catch (e) {
+        document.getElementById('loading').textContent = 'Error carregant: ' + e.message;
+        return;
+    }
+
+    // Selectors d'usuari
+    fillUserSelect('selA', USUARIS, cfg.usuariId);
+    fillUserSelect('selB', USUARIS, USUARIS.find(u => u.id !== cfg.usuariId)?.id);
+    selectedA = parseInt(document.getElementById('selA').value);
+    selectedB = parseInt(document.getElementById('selB').value);
+
+    document.getElementById('selA').addEventListener('change', e => { selectedA = parseInt(e.target.value); refresh(); });
+    document.getElementById('selB').addEventListener('change', e => { selectedB = parseInt(e.target.value); refresh(); });
+
+    // Modalitats — botó "Totes" + una per modalitat
+    selectedMod = cfg.modalitatId || (MODALITATS[0] && MODALITATS[0].id);
+    renderModalityButtons();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    refresh();
+}
+
+function fillUserSelect(id, users, defaultId) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = users.map(u => `<option value="${u.id}">${escapeHtml(u.nom)}</option>`).join('');
+    if (defaultId) sel.value = defaultId;
+}
+
+function renderModalityButtons() {
+    const cont = document.getElementById('modalityRow');
+    cont.innerHTML = `
+        <button class="modality-btn ${selectedMod === 'all' ? 'active' : ''}" data-mod="all">Totes</button>
+        ${MODALITATS.map(m => `
+            <button class="modality-btn ${selectedMod === m.id ? 'active' : ''}" data-mod="${m.id}">${escapeHtml(m.nom)}</button>
+        `).join('')}
+    `;
+    cont.querySelectorAll('.modality-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mod = btn.dataset.mod;
+            selectedMod = mod === 'all' ? 'all' : parseInt(mod);
+            renderModalityButtons();
+            refresh();
+        });
+    });
+}
+
+async function refresh() {
+    if (!selectedA || !selectedB) return;
+    const [partidesA, partidesB] = await Promise.all([
+        loadPartides(selectedA),
+        loadPartides(selectedB),
+    ]);
+
+    const filteredA = filterByMod(partidesA, selectedMod);
+    const filteredB = filterByMod(partidesB, selectedMod);
+
+    const userA = USUARIS.find(u => u.id === selectedA);
+    const userB = USUARIS.find(u => u.id === selectedB);
+    document.getElementById('nameA').textContent = userA ? userA.nom : '—';
+    document.getElementById('nameB').textContent = userB ? userB.nom : '—';
+
+    renderComparison(filteredA, filteredB);
+    renderEvolutionChart(filteredA, filteredB, userA, userB);
+}
+
+async function loadPartides(usuariId) {
+    if (cacheData[usuariId]) return cacheData[usuariId];
+    const data = await fetchJson(`/api/partides?usuari_id=${usuariId}`);
+    cacheData[usuariId] = data;
+    return data;
+}
+
+function filterByMod(partides, mod) {
+    if (mod === 'all') return partides;
+    return partides.filter(p => p.modalitat_id === mod);
+}
+
+function statsOf(partides) {
+    if (partides.length === 0) {
+        return { total: 0, mitjana: 0, totalCar: 0, totalEnt: 0, millor: null, pitjor: null, V: 0, E: 0, D: 0, serieMajor: 0 };
+    }
+    let totalCar = 0, totalEnt = 0, V = 0, E = 0, D = 0, serieMajor = 0;
+    let millor = partides[0], pitjor = partides[0];
+    for (const p of partides) {
+        totalCar += p.caramboles || 0;
+        totalEnt += p.entrades || 0;
+        if ((p.mitjana || 0) > (millor.mitjana || 0)) millor = p;
+        if ((p.mitjana || 0) < (pitjor.mitjana || 0)) pitjor = p;
+        if (p.caramboles > p.caramboles_oponent) V++;
+        else if (p.caramboles === p.caramboles_oponent) E++;
+        else D++;
+        if ((p.serie_major || 0) > serieMajor) serieMajor = p.serie_major;
+    }
+    return {
+        total: partides.length,
+        mitjana: totalEnt > 0 ? totalCar / totalEnt : 0,
+        totalCar, totalEnt,
+        millor, pitjor,
+        V, E, D, serieMajor,
+    };
+}
+
+function renderComparison(partidesA, partidesB) {
+    const a = statsOf(partidesA);
+    const b = statsOf(partidesB);
+    const grid = document.getElementById('compareGrid');
+
+    const rows = [
+        { label: 'Partides', a: a.total, b: b.total, better: 'higher' },
+        { label: 'Mitjana global', a: a.mitjana.toFixed(3), b: b.mitjana.toFixed(3), better: 'higher', _na: a.mitjana, _nb: b.mitjana },
+        { label: 'Caramboles totals', a: a.totalCar, b: b.totalCar, better: 'higher' },
+        { label: 'Entrades totals', a: a.totalEnt, b: b.totalEnt, better: 'lower' },
+        { label: 'Millor partida', a: a.millor ? a.millor.mitjana.toFixed(3) : '—', b: b.millor ? b.millor.mitjana.toFixed(3) : '—', better: 'higher', _na: a.millor ? a.millor.mitjana : 0, _nb: b.millor ? b.millor.mitjana : 0 },
+        { label: 'Pitjor partida', a: a.pitjor ? a.pitjor.mitjana.toFixed(3) : '—', b: b.pitjor ? b.pitjor.mitjana.toFixed(3) : '—', better: 'higher', _na: a.pitjor ? a.pitjor.mitjana : 0, _nb: b.pitjor ? b.pitjor.mitjana : 0 },
+        { label: 'Sèrie major', a: a.serieMajor || '—', b: b.serieMajor || '—', better: 'higher', _na: a.serieMajor, _nb: b.serieMajor },
+        { label: 'Victòries', a: a.V, b: b.V, better: 'higher' },
+        { label: 'Empats', a: a.E, b: b.E, better: 'none' },
+        { label: 'Derrotes', a: a.D, b: b.D, better: 'lower' },
+    ];
+
+    grid.innerHTML = rows.map(r => {
+        const na = r._na !== undefined ? r._na : (typeof r.a === 'number' ? r.a : parseFloat(r.a) || 0);
+        const nb = r._nb !== undefined ? r._nb : (typeof r.b === 'number' ? r.b : parseFloat(r.b) || 0);
+        let aClass = '', bClass = '';
+        if (r.better === 'higher') {
+            if (na > nb) aClass = 'winner';
+            else if (nb > na) bClass = 'winner';
+        } else if (r.better === 'lower') {
+            if (na < nb && na > 0) aClass = 'winner';
+            else if (nb < na && nb > 0) bClass = 'winner';
+        }
+        return `
+            <div class="compare-label">${r.label}</div>
+            <div class="${aClass}">${r.a}</div>
+            <div class="${bClass}">${r.b}</div>
+        `;
+    }).join('');
+}
+
+function renderEvolutionChart(partidesA, partidesB, userA, userB) {
+    const window = TRES_BANDES_NAMES.includes(MODALITATS.find(m => m.id === selectedMod)?.nom) ? 15 : 10;
+
+    const sortedA = [...partidesA].sort((x, y) => (x.data || '').localeCompare(y.data || ''));
+    const sortedB = [...partidesB].sort((x, y) => (x.data || '').localeCompare(y.data || ''));
+
+    const movingAvg = arr => arr.map((_, idx) => {
+        const start = Math.max(0, idx - (window - 1));
+        const slice = arr.slice(start, idx + 1);
+        const c = slice.reduce((s, p) => s + (p.caramboles || 0), 0);
+        const e = slice.reduce((s, p) => s + (p.entrades || 0), 0);
+        return e > 0 ? c / e : 0;
+    });
+
+    const dataA = movingAvg(sortedA);
+    const dataB = movingAvg(sortedB);
+
+    // Eix X comú: nombre de partida (1..max)
+    const maxLen = Math.max(dataA.length, dataB.length);
+    const labels = Array.from({ length: maxLen }, (_, i) => `P${i + 1}`);
+
+    const ctx = document.getElementById('evoChart').getContext('2d');
+    if (evoChart) evoChart.destroy();
+
+    if (maxLen === 0) {
+        // No hi ha res a dibuixar
+        return;
+    }
+
+    evoChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: userA ? userA.nom : 'A',
+                    data: dataA,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    pointRadius: 0,
+                },
+                {
+                    label: userB ? userB.nom : 'B',
+                    data: dataB,
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220,38,38,0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    pointRadius: 0,
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 12 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: false, ticks: { callback: v => Number(v).toFixed(2) } },
+                x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }
+            }
+        }
+    });
+}
+
+async function fetchJson(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

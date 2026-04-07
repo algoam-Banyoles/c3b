@@ -34,6 +34,19 @@ function insertNavbar() {
             </div>
 
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="NavbarComponent.obrirComparativa()" style="
+                    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 2px 6px rgba(5,150,105,0.2);
+                ">⚖️ Comparar</button>
+
                 <button onclick="NavbarComponent.gestionarUsuaris()" style="
                     background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
                     color: white;
@@ -248,6 +261,11 @@ const NavbarComponent = {
     // Gestionar usuaris
     gestionarUsuaris() {
         window.location.href = 'manage-users.html';
+    },
+
+    // Obrir comparativa entre jugadors
+    obrirComparativa() {
+        window.location.href = 'vs.html';
     }
 };
 
