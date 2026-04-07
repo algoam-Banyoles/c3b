@@ -742,15 +742,19 @@
                     </div>
                     <div class="input-group">
                         <label>Lloc</label>
-                        <input type="text" id="formLloc" placeholder="Ex: Banyoles">
+                        <input type="text" id="formLloc" list="suggLlocs" placeholder="Ex: Banyoles" autocomplete="off">
+                        <datalist id="suggLlocs"></datalist>
                     </div>
                     <div class="input-group form-grid-full">
                         <label>Oponent *</label>
-                        <input type="text" id="formOponent" required placeholder="Ex: Jose Jiménez">
+                        <input type="text" id="formOponent" required list="suggOponents" placeholder="Ex: Jose Jiménez" autocomplete="off">
+                        <datalist id="suggOponents"></datalist>
+                        <div id="h2hHint" style="display:none; margin-top:6px; padding:8px 10px; background:#eff6ff; border-left:3px solid #2563eb; border-radius:4px; font-size:12px; color:#1e3a8a;"></div>
                     </div>
                     <div class="input-group form-grid-full">
                         <label>Equip</label>
-                        <input type="text" id="formEquip" placeholder="Ex: C. B. Sant Adrià">
+                        <input type="text" id="formEquip" list="suggEquips" placeholder="Ex: C. B. Sant Adrià" autocomplete="off">
+                        <datalist id="suggEquips"></datalist>
                     </div>
                     <div class="input-group">
                         <label>Tipus de Competició</label>
@@ -801,6 +805,7 @@
     <script src="js/table.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/suggestions.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

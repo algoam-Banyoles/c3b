@@ -7,7 +7,10 @@ function openAddModal() {
     document.getElementById('modalTitle').textContent = '➕ Afegir Nova Partida';
     document.getElementById('partidaForm').reset();
     document.getElementById('formData').valueAsDate = new Date();
+    const h2h = document.getElementById('h2hHint');
+    if (h2h) h2h.style.display = 'none';
     document.getElementById('partidaModal').classList.add('show');
+    if (typeof carregarSuggeriments === 'function') carregarSuggeriments();
 }
 
 function openEditModal(index) {
@@ -27,6 +30,8 @@ function openEditModal(index) {
     document.getElementById('formTipus').value = partida.competicio || '';
 
     document.getElementById('partidaModal').classList.add('show');
+    if (typeof carregarSuggeriments === 'function') carregarSuggeriments();
+    if (typeof actualitzarH2H === 'function') actualitzarH2H();
 }
 
 function closeModal() {

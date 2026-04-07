@@ -42,6 +42,7 @@ async function init() {
     setupRangeSlider();
     updateChart();
     updateManageStats();
+    restaurarTabActiva();
 
     // Service Worker per PWA
     if ('serviceWorker' in navigator) {
@@ -93,15 +94,34 @@ function refreshAll() {
     updateManageStats();
 }
 
+const ACTIVE_TAB_KEY = 'billar_active_tab';
+const VALID_TABS = ['evolution', 'simulator', 'table', 'manage'];
+
 function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    event.target.classList.add('active');
+    if (typeof event !== 'undefined' && event && event.target) {
+        event.target.classList.add('active');
+    } else {
+        // Activació programàtica: troba el botó pel onclick
+        const btn = Array.from(document.querySelectorAll('.tab'))
+            .find(b => (b.getAttribute('onclick') || '').includes(`'${tabName}'`));
+        if (btn) btn.classList.add('active');
+    }
 
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
 
+    try { localStorage.setItem(ACTIVE_TAB_KEY, tabName); } catch (_) {}
+
     if (tabName === 'evolution' && chart) {
         chart.resize();
+    }
+}
+
+function restaurarTabActiva() {
+    const saved = localStorage.getItem(ACTIVE_TAB_KEY);
+    if (saved && VALID_TABS.includes(saved) && saved !== 'evolution') {
+        switchTab(saved);
     }
 }
 
