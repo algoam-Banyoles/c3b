@@ -20,6 +20,10 @@
     {
       "src": "icons/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "node_modules/@vercel/speed-insights/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -30,6 +34,10 @@
     {
       "src": "/icons/(.*)",
       "dest": "/icons/$1"
+    },
+    {
+      "src": "/node_modules/@vercel/speed-insights/(.*)",
+      "dest": "/node_modules/@vercel/speed-insights/$1"
     },
     {
       "src": "/(config|navbar)\\.js",
