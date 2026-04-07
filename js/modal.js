@@ -73,13 +73,16 @@ async function guardarPartida(event) {
             if (partidaExistent.id) {
                 await BillarConfig.updatePartida(partidaExistent.id, partida);
             }
-            PARTIDES_DATA[editingIndex] = { ...partidaExistent, ...partida };
+            // Aplicar el canvi a PARTIDES_RAW (font de veritat)
+            const rawIdx = PARTIDES_RAW.findIndex(p => p.id === partidaExistent.id);
+            if (rawIdx >= 0) PARTIDES_RAW[rawIdx] = { ...partidaExistent, ...partida };
         } else {
             const novaPartida = await BillarConfig.savePartida(partida);
-            PARTIDES_DATA.push(novaPartida);
+            PARTIDES_RAW.push(novaPartida);
         }
 
-        PARTIDES_DATA.sort((a, b) => a.num - b.num);
+        PARTIDES_RAW.sort((a, b) => a.num - b.num);
+        aplicarFiltrePeriode();
 
         await guardarDadesStorage();
         refreshAll();
@@ -103,7 +106,11 @@ async function eliminarPartida(index) {
             if (partida.id) {
                 await BillarConfig.deletePartida(partida.id);
             }
-            PARTIDES_DATA.splice(index, 1);
+            const rawIdx = PARTIDES_RAW.findIndex(p =>
+                partida.id ? p.id === partida.id : p === partida
+            );
+            if (rawIdx >= 0) PARTIDES_RAW.splice(rawIdx, 1);
+            aplicarFiltrePeriode();
             await guardarDadesStorage();
             refreshAll();
             alert('✅ Partida eliminada!');

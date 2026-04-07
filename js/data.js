@@ -7,28 +7,24 @@ const STORAGE_VERSION = '1.0';
 
 async function carregarDades() {
     try {
-        PARTIDES_DATA = await BillarConfig.loadPartides();
-        console.log('✅ Dades carregades des del servidor:', PARTIDES_DATA.length, 'partides');
+        PARTIDES_RAW = await BillarConfig.loadPartides();
         guardarDadesStorage();
     } catch (error) {
-        console.error('❌ Error carregant des del servidor:', error);
-        console.log('Intentant carregar des de localStorage...');
-
+        console.error('Error carregant des del servidor:', error);
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                PARTIDES_DATA = data.partides || [];
-                console.log('⚠️ Dades carregades des de localStorage (backup):', PARTIDES_DATA.length, 'partides');
+                PARTIDES_RAW = data.partides || [];
             } catch (e) {
                 console.error('Error carregant des de localStorage:', e);
-                PARTIDES_DATA = [];
+                PARTIDES_RAW = [];
             }
         } else {
-            PARTIDES_DATA = [];
-            console.log('No hi ha dades disponibles');
+            PARTIDES_RAW = [];
         }
     }
+    aplicarFiltrePeriode();
 }
 
 async function guardarDadesStorage() {
@@ -43,7 +39,7 @@ async function guardarDadesStorage() {
         lastUpdate: new Date().toISOString(),
         usuari: config.usuariNom,
         modalitat: config.modalitatNom,
-        partides: PARTIDES_DATA
+        partides: PARTIDES_RAW
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
@@ -52,7 +48,7 @@ function exportarDades() {
     const data = {
         version: STORAGE_VERSION,
         exportDate: new Date().toISOString(),
-        partides: PARTIDES_DATA
+        partides: PARTIDES_RAW
     };
 
     const json = JSON.stringify(data, null, 2);
@@ -79,7 +75,8 @@ function importarDades(event) {
             const data = JSON.parse(e.target.result);
             if (data.partides && Array.isArray(data.partides)) {
                 if (confirm(`Vols importar ${data.partides.length} partides? Això reemplaçarà les dades actuals.`)) {
-                    PARTIDES_DATA = data.partides;
+                    PARTIDES_RAW = data.partides;
+                    aplicarFiltrePeriode();
                     guardarDadesStorage();
                     refreshAll();
                     alert('✅ Dades importades correctament!');
@@ -97,8 +94,9 @@ function importarDades(event) {
 
 function confirmarEsborrarTot() {
     if (confirm('⚠️ Segur que vols esborrar TOTES les partides? Aquesta acció no es pot desfer.')) {
-        if (confirm('⚠️ Última confirmació: S\'esborraran ' + PARTIDES_DATA.length + ' partides. Continuar?')) {
-            PARTIDES_DATA = [];
+        if (confirm('⚠️ Última confirmació: S\'esborraran ' + PARTIDES_RAW.length + ' partides. Continuar?')) {
+            PARTIDES_RAW = [];
+            aplicarFiltrePeriode();
             guardarDadesStorage();
             refreshAll();
             alert('✅ Totes les dades han estat esborrades');
@@ -112,15 +110,16 @@ function restaurarDadesInicials() {
         return;
     }
     if (confirm(`⚠️ Vols restaurar les ${INITIAL_DATA.length} partides inicials? Això reemplaçarà les dades actuals.`)) {
-        PARTIDES_DATA = [...INITIAL_DATA];
+        PARTIDES_RAW = [...INITIAL_DATA];
+        aplicarFiltrePeriode();
         guardarDadesStorage();
         refreshAll();
-        alert(`✅ Dades restaurades! Ara tens ${PARTIDES_DATA.length} partides.`);
+        alert(`✅ Dades restaurades! Ara tens ${PARTIDES_RAW.length} partides.`);
     }
 }
 
 function updateManageStats() {
-    document.getElementById('totalPartides').textContent = PARTIDES_DATA.length;
+    document.getElementById('totalPartides').textContent = PARTIDES_RAW.length;
     const sizeBytes = new Blob([localStorage.getItem(STORAGE_KEY) || '']).size;
     document.getElementById('espaciUtilitzat').textContent = (sizeBytes / 1024).toFixed(2) + ' KB';
 }

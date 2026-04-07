@@ -17,7 +17,9 @@ async function carregarSuggeriments() {
         SUGG_PARTIDES_TOTES = await resp.json();
     } catch (e) {
         console.warn('No s\'han pogut carregar els suggeriments:', e);
-        SUGG_PARTIDES_TOTES = PARTIDES_DATA || [];
+        SUGG_PARTIDES_TOTES = (typeof PARTIDES_RAW !== 'undefined' && PARTIDES_RAW.length > 0)
+            ? PARTIDES_RAW
+            : (PARTIDES_DATA || []);
     }
 
     omplirDatalists();

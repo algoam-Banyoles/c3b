@@ -29,11 +29,15 @@ function reminderShouldShow(lastMatchIso) {
 }
 
 function comprovarRecordatori() {
-    if (!Array.isArray(PARTIDES_DATA) || PARTIDES_DATA.length === 0) return;
+    // Mirem PARTIDES_RAW (no la vista filtrada) perquè el filtre de període
+    // no ha d'amagar el recordatori.
+    const source = (typeof PARTIDES_RAW !== 'undefined' && Array.isArray(PARTIDES_RAW))
+        ? PARTIDES_RAW
+        : PARTIDES_DATA;
+    if (!Array.isArray(source) || source.length === 0) return;
 
-    // Trobem la partida més recent (data més gran)
     let lastDate = null;
-    for (const p of PARTIDES_DATA) {
+    for (const p of source) {
         if (p.data && (!lastDate || p.data > lastDate)) lastDate = p.data;
     }
     if (!lastDate) return;

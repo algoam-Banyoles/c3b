@@ -591,6 +591,15 @@
         <div class="header">
             <h1 id="mainTitle"><img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">Estadístiques de Billar</h1>
             <div id="userSubtitle" style="text-align: center; color: #666; margin-top: 5px;"></div>
+            <div style="text-align:center; margin-top:10px;">
+                <label style="font-size:12px; color:#666; margin-right:6px;">Període:</label>
+                <select id="periodFilter" onchange="canviarPeriode(this.value)" style="padding:6px 12px; border:1px solid #ddd; border-radius:6px; font-size:13px; background:white; cursor:pointer;">
+                    <option value="all">Tota la història</option>
+                    <option value="current">Temporada actual</option>
+                    <option value="previous">Temporada anterior</option>
+                    <option value="90d">Darrers 90 dies</option>
+                </select>
+            </div>
             <div class="stats-summary" id="globalStats"></div>
         </div>
         

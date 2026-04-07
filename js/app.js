@@ -2,12 +2,16 @@
 // Estat global, init, refreshAll, switching de pestanyes, esdeveniments
 // ============================================================================
 
-let PARTIDES_DATA = [];
+let PARTIDES_DATA = [];   // vista filtrada pel període seleccionat
+let PARTIDES_RAW = [];    // totes les partides carregades del servidor
 let chart = null;
 // Finestra de la mitjana mòbil: 15 per 3 Bandes, 10 per la resta. S'estableix a init().
 let ROLLING_WINDOW = 15;
 let currentRange = { start: 0, end: 15 };
 let editingIndex = -1;
+
+const PERIOD_FILTER_KEY = 'billar_period_filter';
+let currentPeriod = 'all';
 
 async function init() {
     const userConfig = BillarConfig.requireUser();
@@ -29,6 +33,7 @@ async function init() {
     const simDesc = document.querySelector('#simulator p');
     if (simDesc) simDesc.textContent = `Introdueix les caramboles i entrades de la propera partida per veure com canviarà la teva mitjana de les últimes ${ROLLING_WINDOW} partides.`;
 
+    restaurarPeriode();
     await carregarDades();
 
     if (PARTIDES_DATA.length >= ROLLING_WINDOW) {
@@ -74,6 +79,67 @@ async function init() {
                 window.location.reload();
             }
         });
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Filtre per període
+// ----------------------------------------------------------------------------
+function temporadaDe(dateIso) {
+    const d = new Date(dateIso);
+    if (isNaN(d.getTime())) return null;
+    const mes = d.getMonth() + 1;
+    const any = d.getFullYear();
+    return mes >= 8 ? `${any}-${any + 1}` : `${any - 1}-${any}`;
+}
+
+function temporadaActualLabel() {
+    const ara = new Date();
+    return temporadaDe(ara.toISOString());
+}
+
+function temporadaAnteriorLabel() {
+    const [a, b] = temporadaActualLabel().split('-').map(Number);
+    return `${a - 1}-${b - 1}`;
+}
+
+function aplicarFiltrePeriode() {
+    if (!Array.isArray(PARTIDES_RAW)) {
+        PARTIDES_DATA = [];
+        return;
+    }
+    if (currentPeriod === 'all') {
+        PARTIDES_DATA = [...PARTIDES_RAW];
+        return;
+    }
+    if (currentPeriod === '90d') {
+        const cutoff = Date.now() - 90 * 86400000;
+        PARTIDES_DATA = PARTIDES_RAW.filter(p => {
+            if (!p.data) return false;
+            const t = new Date(p.data).getTime();
+            return !isNaN(t) && t >= cutoff;
+        });
+        return;
+    }
+    const target = currentPeriod === 'current'
+        ? temporadaActualLabel()
+        : temporadaAnteriorLabel();
+    PARTIDES_DATA = PARTIDES_RAW.filter(p => p.data && temporadaDe(p.data) === target);
+}
+
+function canviarPeriode(value) {
+    currentPeriod = value;
+    try { localStorage.setItem(PERIOD_FILTER_KEY, value); } catch (_) {}
+    aplicarFiltrePeriode();
+    refreshAll();
+}
+
+function restaurarPeriode() {
+    const saved = localStorage.getItem(PERIOD_FILTER_KEY);
+    if (saved && ['all', 'current', 'previous', '90d'].includes(saved)) {
+        currentPeriod = saved;
+        const sel = document.getElementById('periodFilter');
+        if (sel) sel.value = saved;
     }
 }
 
