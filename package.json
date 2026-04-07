@@ -5,11 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "start:refactored": "node server.refactored.js",
-    "dev": "node server.js",
-    "dev:refactored": "node server.refactored.js",
-    "migrate": "node migrate.js",
-    "migrate:check": "node migrate.check.js"
+    "dev": "node server.js"
   },
   "keywords": [
     "billar",

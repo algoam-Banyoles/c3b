@@ -285,68 +285,6 @@ app.post('/api/partides/bulk', async (req, res) => {
 });
 
 // ============================================
-// ENDPOINTS LEGACY (compatibilitat amb versió antiga)
-// ============================================
-
-// API per obtenir partides de Gómez (legacy)
-app.get('/api/partides/gomez', async (req, res) => {
-    try {
-        const { data: usuari } = await supabase
-            .from('usuaris')
-            .select('id')
-            .eq('nom', 'Albert Gómez')
-            .single();
-
-        if (!usuari) {
-            return res.status(404).json({ error: 'Usuari Gómez no trobat' });
-        }
-
-        const { data, error } = await supabase
-            .from('partides')
-            .select('*')
-            .eq('usuari_id', usuari.id)
-            .order('num', { ascending: true });
-
-        if (error) throw error;
-
-        console.log('✅ Partides de Gómez carregades (legacy):', data.length);
-        res.json(data);
-    } catch (error) {
-        console.error('❌ Error llegint partides de Gómez:', error);
-        res.status(500).json({ error: 'Error llegint les dades', details: error.message });
-    }
-});
-
-// API per obtenir partides de Chuecos (legacy)
-app.get('/api/partides/chuecos', async (req, res) => {
-    try {
-        const { data: usuari } = await supabase
-            .from('usuaris')
-            .select('id')
-            .eq('nom', 'Chuecos')
-            .single();
-
-        if (!usuari) {
-            return res.status(404).json({ error: 'Usuari Chuecos no trobat' });
-        }
-
-        const { data, error } = await supabase
-            .from('partides')
-            .select('*')
-            .eq('usuari_id', usuari.id)
-            .order('num', { ascending: true });
-
-        if (error) throw error;
-
-        console.log('✅ Partides de Chuecos carregades (legacy):', data.length);
-        res.json(data);
-    } catch (error) {
-        console.error('❌ Error llegint partides de Chuecos:', error);
-        res.status(500).json({ error: 'Error llegint les dades', details: error.message });
-    }
-});
-
-// ============================================
 // SERVIDOR
 // ============================================
 

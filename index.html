@@ -1294,9 +1294,6 @@
         let currentRange = { start: 0, end: 15 }; // S'actualitzarà dinàmicament a init()
         let editingIndex = -1;
         
-        // API endpoint
-        const API_URL = '/api/partides/gomez';
-        
         // LocalStorage keys (com a backup)
         const STORAGE_KEY = 'billar_partides_data';
         const STORAGE_VERSION = '1.0';
@@ -1826,15 +1823,8 @@
             const totalEntrades = PARTIDES_DATA.reduce((sum, p) => sum + p.entrades, 0);
             const mitjanaGlobal = totalCaramboles / totalEntrades;
 
-            // Últimes 15 partides
-            const ultimes15 = PARTIDES_DATA.slice(-15);
-            const car15 = ultimes15.reduce((sum, p) => sum + p.caramboles, 0);
-            const ent15 = ultimes15.reduce((sum, p) => sum + p.entrades, 0);
-            const mitjana15 = car15 / ent15;
-
             // Estadístiques de punts
             const puntsTotal = calcularEstadistiquesPunts(PARTIDES_DATA);
-            const punts15 = calcularEstadistiquesPunts(ultimes15);
 
             // Millor i pitjor partida
             const millorPartida = PARTIDES_DATA.reduce((max, p) => p.mitjana > max.mitjana ? p : max);
