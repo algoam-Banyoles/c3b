@@ -579,6 +579,15 @@
 </head>
 <body>
     <div class="container">
+        <!-- Recordatori discret quan fa molts dies sense registrar partida -->
+        <div id="reminderBanner" style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; padding:12px 16px; margin-bottom:12px; border-radius:8px; display:none; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+            <span id="reminderText" style="color:#92400e; font-size:14px; font-weight:500;"></span>
+            <div style="display:flex; gap:8px; flex-shrink:0;">
+                <button onclick="reminderAddNow()" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">➕ Afegir</button>
+                <button onclick="reminderDismiss()" style="background:transparent; color:#92400e; border:1px solid #f59e0b; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">✕</button>
+            </div>
+        </div>
+
         <div class="header">
             <h1 id="mainTitle"><img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">Estadístiques de Billar</h1>
             <div id="userSubtitle" style="text-align: center; color: #666; margin-top: 5px;"></div>
@@ -807,6 +816,7 @@
     <script src="js/data.js"></script>
     <script src="js/suggestions.js"></script>
     <script src="js/share.js"></script>
+    <script src="js/reminder.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

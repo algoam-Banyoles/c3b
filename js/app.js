@@ -43,6 +43,7 @@ async function init() {
     updateChart();
     updateManageStats();
     restaurarTabActiva();
+    if (typeof comprovarRecordatori === 'function') comprovarRecordatori();
 
     // Service Worker per PWA
     if ('serviceWorker' in navigator) {
