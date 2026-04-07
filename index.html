@@ -1289,7 +1289,7 @@
         
         let PARTIDES_DATA = [];
         let chart = null;
-        // Finestra de la mitjana mòbil: 15 per Tres Bandes, 10 per la resta. S'estableix a init().
+        // Finestra de la mitjana mòbil: 15 per 3 Bandes, 10 per la resta. S'estableix a init().
         let ROLLING_WINDOW = 15;
         let currentRange = { start: 0, end: 15 }; // S'actualitzarà dinàmicament a init()
         let editingIndex = -1;
@@ -1308,9 +1308,9 @@
             document.getElementById('mainTitle').innerHTML = `<img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">${userConfig.usuariNom}`;
             document.getElementById('userSubtitle').textContent = userConfig.modalitatNom;
 
-            // Determinar finestra de mitjana mòbil segons modalitat (Tres Bandes: 15, resta: 10)
-            const TRES_BANDES_NAMES = ['Tres Bandes', '3 Bandes'];
-            ROLLING_WINDOW = TRES_BANDES_NAMES.includes(userConfig.modalitatNom) ? 15 : 10;
+            // Determinar finestra de mitjana mòbil segons modalitat (3 Bandes: 15, resta: 10).
+            // Acceptem també el nom antic "Tres Bandes" per a sessions amb localStorage anterior al rename.
+            ROLLING_WINDOW = (userConfig.modalitatNom === '3 Bandes' || userConfig.modalitatNom === 'Tres Bandes') ? 15 : 10;
             currentRange.end = ROLLING_WINDOW;
             // Actualitzar textos estàtics que esmenten "15"
             const lblSelector = document.querySelector('.range-selector label');

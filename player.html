@@ -186,7 +186,8 @@
 
 const ROLLING_WINDOW_TRES_BANDES = 15;
 const ROLLING_WINDOW_OTHERS = 10;
-const TRES_BANDES_NAMES = ['Tres Bandes', '3 Bandes'];
+// Acceptem el nom antic "Tres Bandes" per a sessions amb localStorage anterior al rename de modalitat.
+const TRES_BANDES_NAMES = ['3 Bandes', 'Tres Bandes'];
 
 const charts = {}; // modalitatId -> Chart instance
 
@@ -220,7 +221,7 @@ async function init() {
         byMod.get(modId).partides.push(p);
     }
 
-    // Sort modalities: Tres Bandes first, then by count desc
+    // Sort modalities: 3 Bandes first, then by count desc
     const modalities = Array.from(byMod.values()).sort((a, b) => {
         const aTB = TRES_BANDES_NAMES.includes(a.nom);
         const bTB = TRES_BANDES_NAMES.includes(b.nom);

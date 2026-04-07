@@ -469,14 +469,12 @@
             }).join('');
         }
 
-        // Renderitzar modalitats (només seleccionar Tres Bandes per defecte)
+        // Renderitzar modalitats (seleccionar 3 Bandes per defecte si existeix)
         function renderModalitats() {
-            // Seleccionar "Tres Bandes" per defecte si existeix
-            const tresBandes = modalitats.find(m => m.nom === 'Tres Bandes');
+            const tresBandes = modalitats.find(m => m.nom === '3 Bandes');
             if (tresBandes) {
                 selectedModalitatId = tresBandes.id;
             } else if (modalitats.length > 0) {
-                // Si no hi ha "Tres Bandes", agafar la primera modalitat
                 selectedModalitatId = modalitats[0].id;
             }
         }
