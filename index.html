@@ -1289,6 +1289,8 @@
         
         let PARTIDES_DATA = [];
         let chart = null;
+        // Finestra de la mitjana mòbil: 15 per Tres Bandes, 10 per la resta. S'estableix a init().
+        let ROLLING_WINDOW = 15;
         let currentRange = { start: 0, end: 15 }; // S'actualitzarà dinàmicament a init()
         let editingIndex = -1;
         
@@ -1309,13 +1311,25 @@
             document.getElementById('mainTitle').innerHTML = `<img src="icons/billar-stats-icon-48.png" alt="Billar" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">${userConfig.usuariNom}`;
             document.getElementById('userSubtitle').textContent = userConfig.modalitatNom;
 
+            // Determinar finestra de mitjana mòbil segons modalitat (Tres Bandes: 15, resta: 10)
+            const TRES_BANDES_NAMES = ['Tres Bandes', '3 Bandes'];
+            ROLLING_WINDOW = TRES_BANDES_NAMES.includes(userConfig.modalitatNom) ? 15 : 10;
+            currentRange.end = ROLLING_WINDOW;
+            // Actualitzar textos estàtics que esmenten "15"
+            const lblSelector = document.querySelector('.range-selector label');
+            if (lblSelector) lblSelector.textContent = `Selecciona el grup de ${ROLLING_WINDOW} partides:`;
+            const lblRangeEnd = document.getElementById('rangeEnd');
+            if (lblRangeEnd) lblRangeEnd.textContent = `Partida ${ROLLING_WINDOW}`;
+            const simDesc = document.querySelector('#simulator p');
+            if (simDesc) simDesc.textContent = `Introdueix les caramboles i entrades de la propera partida per veure com canviarà la teva mitjana de les últimes ${ROLLING_WINDOW} partides.`;
+
             await carregarDades();
 
             console.log('INIT - Total partides:', PARTIDES_DATA.length);
 
-            // Configurar el range inicial amb les últimes 15 partides
-            if (PARTIDES_DATA.length >= 15) {
-                currentRange.start = PARTIDES_DATA.length - 15;
+            // Configurar el range inicial amb les últimes ROLLING_WINDOW partides
+            if (PARTIDES_DATA.length >= ROLLING_WINDOW) {
+                currentRange.start = PARTIDES_DATA.length - ROLLING_WINDOW;
                 currentRange.end = PARTIDES_DATA.length;
             }
 
@@ -1609,9 +1623,9 @@
         function refreshAll() {
             updateGlobalStats();
 
-            // Assegurar que el rang sempre mostri les últimes 15 partides si és possible
-            if (PARTIDES_DATA.length >= 15) {
-                currentRange.start = PARTIDES_DATA.length - 15;
+            // Assegurar que el rang sempre mostri les últimes ROLLING_WINDOW partides si és possible
+            if (PARTIDES_DATA.length >= ROLLING_WINDOW) {
+                currentRange.start = PARTIDES_DATA.length - ROLLING_WINDOW;
                 currentRange.end = PARTIDES_DATA.length;
             } else if (PARTIDES_DATA.length > 0) {
                 currentRange.start = 0;
@@ -2006,14 +2020,14 @@
         
         // Configurar el slider
         function setupRangeSlider() {
-            if (PARTIDES_DATA.length < 15) {
+            if (PARTIDES_DATA.length < ROLLING_WINDOW) {
                 document.querySelector('.range-selector').style.display = 'none';
                 return;
             }
 
             document.querySelector('.range-selector').style.display = 'block';
             const slider = document.getElementById('rangeSlider');
-            const maxRange = PARTIDES_DATA.length - 14; // Màxim valor per tenir sempre 15 partides visibles
+            const maxRange = PARTIDES_DATA.length - (ROLLING_WINDOW - 1); // Màxim valor per tenir sempre ROLLING_WINDOW partides visibles
             slider.max = maxRange;
 
             // Configurar el valor del slider segons el currentRange actual
@@ -2021,7 +2035,7 @@
 
             slider.oninput = function() {
                 const startIdx = parseInt(this.value) - 1;
-                const endIdx = startIdx + 15;
+                const endIdx = startIdx + ROLLING_WINDOW;
                 currentRange = { start: startIdx, end: endIdx };
 
                 document.getElementById('rangeStart').textContent = `Partida ${PARTIDES_DATA[startIdx].num}`;
@@ -2075,14 +2089,14 @@
             const labels = partidesVisibles.map(p => `P${p.num}`);
             const mitjanes = partidesVisibles.map(p => p.mitjana);
 
-            // Calcular mitjana acumulada de les últimes 15 partides
-            // Per cada punt, calculem la mitjana de les 15 partides anteriors (incloent la partida actual)
+            // Calcular mitjana acumulada de les últimes ROLLING_WINDOW partides
+            // Per cada punt, calculem la mitjana de les ROLLING_WINDOW partides anteriors (incloent la partida actual)
             const mitjanaAcumulada = partidesVisibles.map((p, idx) => {
                 // L'índex global de la partida actual dins PARTIDES_DATA
                 const globalIdx = currentRange.start + idx;
 
-                // Calcular les últimes 15 partides fins aquest punt (des de PARTIDES_DATA global)
-                const startIdx = Math.max(0, globalIdx - 14); // 14 partides anteriors + la actual = 15
+                // Calcular les últimes ROLLING_WINDOW partides fins aquest punt (des de PARTIDES_DATA global)
+                const startIdx = Math.max(0, globalIdx - (ROLLING_WINDOW - 1));
                 const endIdx = globalIdx + 1;
                 const partidesCalc = PARTIDES_DATA.slice(startIdx, endIdx);
 
@@ -2116,7 +2130,7 @@
                             pointHoverRadius: 6
                         },
                         {
-                            label: 'Mitjana Acumulada (últimes 15)',
+                            label: `Mitjana Acumulada (últimes ${ROLLING_WINDOW})`,
                             data: mitjanaAcumulada,
                             borderColor: '#2563eb',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -2168,9 +2182,9 @@
                                         // Mitjana per partida
                                         return `Partida: ${partida.caramboles}/${partida.entrades} = ${partida.mitjana.toFixed(3)}`;
                                     } else if (context.datasetIndex === 1) {
-                                        // Mitjana acumulada últimes 15
+                                        // Mitjana acumulada últimes ROLLING_WINDOW
                                         const globalIdx = currentRange.start + idx;
-                                        const numPartides = Math.min(globalIdx + 1, 15);
+                                        const numPartides = Math.min(globalIdx + 1, ROLLING_WINDOW);
                                         const startP = Math.max(1, partida.num - numPartides + 1);
                                         const endP = partida.num;
                                         return `Mitjana últimes ${numPartides} (P${startP}-P${endP}): ${context.parsed.y.toFixed(3)}`;
@@ -2307,21 +2321,21 @@
         }
         
         function mostrarResultatSimulacio(caramboles, entrades, tipus = 'custom') {
-            if (PARTIDES_DATA.length < 15) {
-                alert('Necessites almenys 15 partides per usar el simulador');
+            if (PARTIDES_DATA.length < ROLLING_WINDOW) {
+                alert(`Necessites almenys ${ROLLING_WINDOW} partides per usar el simulador`);
                 return;
             }
-            
-            // Últimes 15 partides
-            const ultimes15 = PARTIDES_DATA.slice(-15);
-            const carAct = ultimes15.reduce((sum, p) => sum + p.caramboles, 0);
-            const entAct = ultimes15.reduce((sum, p) => sum + p.entrades, 0);
+
+            // Últimes ROLLING_WINDOW partides
+            const ultimesN = PARTIDES_DATA.slice(-ROLLING_WINDOW);
+            const carAct = ultimesN.reduce((sum, p) => sum + p.caramboles, 0);
+            const entAct = ultimesN.reduce((sum, p) => sum + p.entrades, 0);
             const mitjanaActual = carAct / entAct;
-            
-            // Noves últimes 15 (treient la primera i afegint la nova)
-            const ultimes14 = PARTIDES_DATA.slice(-14);
-            const carNou = ultimes14.reduce((sum, p) => sum + p.caramboles, 0) + caramboles;
-            const entNou = ultimes14.reduce((sum, p) => sum + p.entrades, 0) + entrades;
+
+            // Noves últimes ROLLING_WINDOW (treient la primera i afegint la nova)
+            const ultimesNmenys1 = PARTIDES_DATA.slice(-(ROLLING_WINDOW - 1));
+            const carNou = ultimesNmenys1.reduce((sum, p) => sum + p.caramboles, 0) + caramboles;
+            const entNou = ultimesNmenys1.reduce((sum, p) => sum + p.entrades, 0) + entrades;
             const mitjanaNova = carNou / entNou;
             
             const diferencia = mitjanaNova - mitjanaActual;
@@ -2332,7 +2346,7 @@
                     Simulació: ${tipusText}
                 </div>
                 <div class="sim-result-item">
-                    <span class="sim-result-label">Mitjana actual (últimes 15):</span>
+                    <span class="sim-result-label">Mitjana actual (últimes ${ROLLING_WINDOW}):</span>
                     <span class="sim-result-value">${mitjanaActual.toFixed(3)}</span>
                 </div>
                 <div class="sim-result-item">
@@ -2340,7 +2354,7 @@
                     <span class="sim-result-value">${caramboles} / ${entrades} = ${(caramboles/entrades).toFixed(3)}</span>
                 </div>
                 <div class="sim-result-item">
-                    <span class="sim-result-label">Nova mitjana (últimes 15):</span>
+                    <span class="sim-result-label">Nova mitjana (últimes ${ROLLING_WINDOW}):</span>
                     <span class="sim-result-value">${mitjanaNova.toFixed(3)}</span>
                 </div>
                 <div class="sim-result-item">
