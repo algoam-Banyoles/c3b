@@ -1,5 +1,5 @@
 // Configuració del Service Worker
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 const CACHE_NAME = `billar-stats-v${APP_VERSION}`;
 const CACHE_PREFIX = 'billar-stats-';
 
@@ -23,6 +23,7 @@ const STATIC_ASSETS = [
   './js/modal.js',
   './js/data.js',
   './js/suggestions.js',
+  './js/share.js',
   './js/app.js',
   './icons/billar-stats-icon-32.png',
   './icons/billar-stats-icon-48.png',

@@ -56,8 +56,9 @@ function renderPartidesTable() {
                     ${p.url_video ? `<a href="${p.url_video}" target="_blank" rel="noopener noreferrer" title="Veure vídeo">🎥</a>` : '-'}
                 </td>
                 <td>
-                    <button class="btn btn-warning btn-small" onclick="openEditModal(${originalIdx})">✏️</button>
-                    <button class="btn btn-danger btn-small" onclick="eliminarPartida(${originalIdx})">🗑️</button>
+                    <button class="btn btn-warning btn-small" onclick="openEditModal(${originalIdx})" title="Editar">✏️</button>
+                    <button class="btn btn-small" style="background:#10b981;color:white;" onclick="compartirPartida(${originalIdx})" title="Compartir">📤</button>
+                    <button class="btn btn-danger btn-small" onclick="eliminarPartida(${originalIdx})" title="Eliminar">🗑️</button>
                 </td>
             </tr>
         `;
