@@ -88,13 +88,13 @@ async function guardarPartida(event) {
         refreshAll();
         closeModal();
 
-        alert(editingIndex >= 0 ? '✅ Partida actualitzada!' : '✅ Partida afegida!');
+        toast.success(editingIndex >= 0 ? 'Partida actualitzada' : 'Partida afegida');
     } catch (error) {
         console.error('Error guardant partida:', error);
         if (error.code === 'duplicate' || error.status === 409) {
-            alert('⚠️ Aquesta partida ja existeix (mateix dia, oponent i resultat). Si realment és una partida diferent, modifica caramboles o entrades.');
+            toast.warning('Aquesta partida ja existeix (mateix dia, oponent i resultat)');
         } else {
-            alert('❌ Error guardant la partida: ' + error.message);
+            toast.error('Error guardant la partida: ' + error.message);
         }
     }
 }
@@ -113,10 +113,10 @@ async function eliminarPartida(index) {
             aplicarFiltrePeriode();
             await guardarDadesStorage();
             refreshAll();
-            alert('✅ Partida eliminada!');
+            toast.success('Partida eliminada');
         } catch (error) {
             console.error('Error eliminant partida:', error);
-            alert('❌ Error eliminant la partida: ' + error.message);
+            toast.error('Error eliminant la partida: ' + error.message);
         }
     }
 }

@@ -7,7 +7,7 @@ function calcularSimulacio() {
     const entrades = parseInt(document.getElementById('simEntrades').value);
 
     if (!caramboles || !entrades || entrades === 0) {
-        alert('Si us plau, introdueix caramboles i entrades vàlides');
+        toast.warning('Introdueix caramboles i entrades vàlides');
         return;
     }
 
@@ -16,7 +16,7 @@ function calcularSimulacio() {
 
 function simularMillor() {
     if (PARTIDES_DATA.length === 0) {
-        alert('No hi ha partides per simular');
+        toast.warning('No hi ha partides per simular');
         return;
     }
 
@@ -28,7 +28,7 @@ function simularMillor() {
 
 function simularPitjor() {
     if (PARTIDES_DATA.length === 0) {
-        alert('No hi ha partides per simular');
+        toast.warning('No hi ha partides per simular');
         return;
     }
 
@@ -40,7 +40,7 @@ function simularPitjor() {
 
 function mostrarResultatSimulacio(caramboles, entrades, tipus = 'custom') {
     if (PARTIDES_DATA.length < ROLLING_WINDOW) {
-        alert(`Necessites almenys ${ROLLING_WINDOW} partides per usar el simulador`);
+        toast.warning(`Necessites almenys ${ROLLING_WINDOW} partides per usar el simulador`);
         return;
     }
 

@@ -62,7 +62,7 @@ function exportarDades() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    alert('✅ Dades exportades correctament!');
+    toast.success('Dades exportades correctament');
 }
 
 function importarDades(event) {
@@ -79,13 +79,13 @@ function importarDades(event) {
                     aplicarFiltrePeriode();
                     guardarDadesStorage();
                     refreshAll();
-                    alert('✅ Dades importades correctament!');
+                    toast.success('Dades importades correctament');
                 }
             } else {
-                alert('❌ Format de fitxer no vàlid');
+                toast.error('Format de fitxer no vàlid');
             }
         } catch (e) {
-            alert('❌ Error llegint el fitxer: ' + e.message);
+            toast.error('Error llegint el fitxer: ' + e.message);
         }
     };
     reader.readAsText(file);
@@ -99,14 +99,14 @@ function confirmarEsborrarTot() {
             aplicarFiltrePeriode();
             guardarDadesStorage();
             refreshAll();
-            alert('✅ Totes les dades han estat esborrades');
+            toast.success('Totes les dades han estat esborrades');
         }
     }
 }
 
 function restaurarDadesInicials() {
     if (typeof INITIAL_DATA === 'undefined') {
-        alert('No hi ha dades inicials disponibles');
+        toast.warning('No hi ha dades inicials disponibles');
         return;
     }
     if (confirm(`⚠️ Vols restaurar les ${INITIAL_DATA.length} partides inicials? Això reemplaçarà les dades actuals.`)) {
@@ -114,7 +114,7 @@ function restaurarDadesInicials() {
         aplicarFiltrePeriode();
         guardarDadesStorage();
         refreshAll();
-        alert(`✅ Dades restaurades! Ara tens ${PARTIDES_RAW.length} partides.`);
+        toast.success(`Dades restaurades. Ara tens ${PARTIDES_RAW.length} partides`);
     }
 }
 
