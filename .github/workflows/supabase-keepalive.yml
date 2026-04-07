@@ -1,0 +1,23 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: '0 12 */3 * *'  # cada 3 dies a les 12:00 UTC
+  workflow_dispatch:        # permet executar-lo manualment
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          response=$(curl -s -o response.txt -w "%{http_code}" \
+            -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/modalitats?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "HTTP status: $response"
+          cat response.txt
+          if [ "$response" -ge 400 ]; then
+            echo "Keepalive ping failed"
+            exit 1
+          fi
