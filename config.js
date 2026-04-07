@@ -170,7 +170,10 @@ const BillarConfig = {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Error guardant partida');
+                const err = new Error(errorData.error || 'Error guardant partida');
+                err.code = errorData.code;
+                err.status = response.status;
+                throw err;
             }
 
             return await response.json();

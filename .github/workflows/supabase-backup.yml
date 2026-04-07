@@ -1,0 +1,67 @@
+name: Supabase Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # cada diumenge a les 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout backups branch
+        uses: actions/checkout@v4
+        with:
+          ref: backups
+          fetch-depth: 1
+        continue-on-error: true
+
+      - name: Init backups branch if missing
+        run: |
+          if [ ! -d .git ]; then
+            git init
+            git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+            git checkout --orphan backups
+            git rm -rf . 2>/dev/null || true
+            echo "# Supabase backups" > README.md
+            git add README.md
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "init backups branch"
+            git push -u origin backups
+          fi
+
+      - name: Dump tables to JSON
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          DATE=$(date -u +%Y-%m-%d)
+          DIR="backups/$DATE"
+          mkdir -p "$DIR"
+          for table in usuaris modalitats partides; do
+            echo "Dumping $table..."
+            curl -sf "$SUPABASE_URL/rest/v1/$table?select=*" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "Accept: application/json" \
+              > "$DIR/$table.json"
+            wc -c "$DIR/$table.json"
+          done
+          ln -sfn "$DATE" backups/latest 2>/dev/null || true
+          ls -la "$DIR"
+
+      - name: Commit and push backup
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "backup: $(date -u +%Y-%m-%d)"
+          git push origin HEAD:backups

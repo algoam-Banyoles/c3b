@@ -83,7 +83,11 @@ async function guardarPartida(event) {
         alert(editingIndex >= 0 ? '✅ Partida actualitzada!' : '✅ Partida afegida!');
     } catch (error) {
         console.error('Error guardant partida:', error);
-        alert('❌ Error guardant la partida: ' + error.message);
+        if (error.code === 'duplicate' || error.status === 409) {
+            alert('⚠️ Aquesta partida ja existeix (mateix dia, oponent i resultat). Si realment és una partida diferent, modifica caramboles o entrades.');
+        } else {
+            alert('❌ Error guardant la partida: ' + error.message);
+        }
     }
 }
 

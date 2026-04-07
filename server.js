@@ -148,6 +148,34 @@ app.post('/api/modalitats', async (req, res) => {
 // ENDPOINTS DE PARTIDES (NOU SISTEMA UNIFICAT)
 // ============================================
 
+// Validacions compartides per a partides (POST i bulk)
+function validarPartida(p) {
+    if (p == null || typeof p !== 'object') return 'partida ha de ser un objecte';
+    if (!Number.isInteger(p.usuari_id) || p.usuari_id <= 0) return 'usuari_id obligatori i positiu';
+    if (!Number.isInteger(p.modalitat_id) || p.modalitat_id <= 0) return 'modalitat_id obligatori i positiu';
+    if (p.data && isNaN(Date.parse(p.data))) return 'data no és una data vàlida';
+    const car = p.caramboles, ent = p.entrades, carOp = p.caramboles_oponent;
+    if (car != null && (!Number.isFinite(car) || car < 0)) return 'caramboles ha de ser >= 0';
+    if (ent != null && (!Number.isFinite(ent) || ent <= 0)) return 'entrades ha de ser > 0';
+    if (carOp != null && (!Number.isFinite(carOp) || carOp < 0)) return 'caramboles_oponent ha de ser >= 0';
+    if (p.serie_major != null && (!Number.isFinite(p.serie_major) || p.serie_major < 0)) return 'serie_major ha de ser >= 0';
+    return null;
+}
+
+// Tradueix errors de Postgres a respostes HTTP coherents
+function dbErrorToResponse(error) {
+    if (error && error.code === '23505') {
+        if (String(error.details || '').includes('partides_no_duplicates')) {
+            return { status: 409, body: { error: 'Aquesta partida ja existeix', code: 'duplicate', details: error.details } };
+        }
+        return { status: 409, body: { error: 'Conflicte d\'unicitat', code: 'duplicate', details: error.details } };
+    }
+    if (error && error.code === '23503') {
+        return { status: 400, body: { error: 'Referència no vàlida (usuari o modalitat inexistent)', code: 'fk_violation', details: error.details } };
+    }
+    return { status: 500, body: { error: 'Error de base de dades', details: error.message } };
+}
+
 // Obtenir partides (amb filtres opcionals per usuari i modalitat)
 app.get('/api/partides', async (req, res) => {
     try {
@@ -187,8 +215,9 @@ app.post('/api/partides', async (req, res) => {
     try {
         const partida = req.body;
 
-        if (!partida.usuari_id || !partida.modalitat_id) {
-            return res.status(400).json({ error: 'usuari_id i modalitat_id són obligatoris' });
+        const validationError = validarPartida(partida);
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
         }
 
         // Eliminar camps auto-generats
@@ -199,7 +228,11 @@ app.post('/api/partides', async (req, res) => {
             .insert([partidaNetejada])
             .select();
 
-        if (error) throw error;
+        if (error) {
+            const { status, body } = dbErrorToResponse(error);
+            console.error(`❌ Error creant partida (${status}):`, body);
+            return res.status(status).json(body);
+        }
 
         console.log('✅ Partida creada:', data[0].num);
         res.json(data[0]);
@@ -224,7 +257,11 @@ app.put('/api/partides/:id', async (req, res) => {
             .eq('id', id)
             .select();
 
-        if (error) throw error;
+        if (error) {
+            const { status, body } = dbErrorToResponse(error);
+            console.error(`❌ Error actualitzant partida (${status}):`, body);
+            return res.status(status).json(body);
+        }
 
         console.log('✅ Partida actualitzada:', id);
         res.json(data[0]);
@@ -263,6 +300,14 @@ app.post('/api/partides/bulk', async (req, res) => {
             return res.status(400).json({ error: 'S\'esperava un array de partides' });
         }
 
+        // Validar cada partida abans d'enviar res a la BD
+        for (let i = 0; i < partides.length; i++) {
+            const err = validarPartida(partides[i]);
+            if (err) {
+                return res.status(400).json({ error: `Partida ${i}: ${err}` });
+            }
+        }
+
         // Eliminar camps auto-generats
         const partidesNetejades = partides.map(p => {
             const { id, created_at, updated_at, usuaris, modalitats, ...rest } = p;
@@ -274,13 +319,54 @@ app.post('/api/partides/bulk', async (req, res) => {
             .insert(partidesNetejades)
             .select();
 
-        if (error) throw error;
+        if (error) {
+            const { status, body } = dbErrorToResponse(error);
+            console.error(`❌ Error guardant partides bulk (${status}):`, body);
+            return res.status(status).json(body);
+        }
 
         console.log('✅ Partides guardades (bulk):', partidesNetejades.length);
         res.json({ success: true, count: data.length, data });
     } catch (error) {
         console.error('❌ Error guardant partides (bulk):', error);
         res.status(500).json({ error: 'Error guardant partides', details: error.message });
+    }
+});
+
+// ============================================
+// HEALTH
+// ============================================
+
+app.get('/api/health', async (req, res) => {
+    const started = Date.now();
+    try {
+        const { count, error: countErr } = await supabase
+            .from('partides')
+            .select('id', { count: 'exact', head: true });
+        if (countErr) throw countErr;
+
+        const { data: lastRow, error: lastErr } = await supabase
+            .from('partides')
+            .select('data')
+            .order('data', { ascending: false })
+            .limit(1);
+        if (lastErr) throw lastErr;
+
+        res.json({
+            ok: true,
+            db: 'ok',
+            count_partides: count,
+            last_match_date: lastRow && lastRow[0] ? lastRow[0].data : null,
+            response_ms: Date.now() - started,
+        });
+    } catch (error) {
+        console.error('❌ Healthcheck failed:', error);
+        res.status(503).json({
+            ok: false,
+            db: 'error',
+            error: error.message,
+            response_ms: Date.now() - started,
+        });
     }
 });
 
