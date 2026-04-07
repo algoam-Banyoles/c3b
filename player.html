@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil del jugador · Estadístiques de billar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/billar-stats-icon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/billar-stats-icon-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/billar-stats-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/billar-stats-icon-180.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js"></script>
+    <script src="navbar.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1f2937;
+        }
+        .container { max-width: 980px; margin: 0 auto; }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .header h1 { font-size: 26px; color: #1e3a8a; margin-bottom: 4px; }
+        .header .subtitle { color: #6b7280; font-size: 14px; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Tabs per modalitat */
+        .modality-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .modality-tab {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+        .modality-tab:hover { border-color: #3b82f6; color: #3b82f6; }
+        .modality-tab.active {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border-color: #1e3a8a;
+            color: white;
+            box-shadow: 0 4px 8px rgba(30,58,138,0.3);
+        }
+        .modality-tab .count {
+            display: block;
+            font-size: 11px;
+            font-weight: 400;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        .modality-pane { display: none; }
+        .modality-pane.active { display: block; }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card.green  { background: linear-gradient(135deg, #059669, #10b981); }
+        .stat-card.red    { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .stat-card.purple { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+        .stat-card.orange { background: linear-gradient(135deg, #ea580c, #f59e0b); }
+        .stat-card .label { font-size: 11px; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+        .stat-card .subvalue { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+
+        /* Chart */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-top: 8px;
+        }
+        .chart-title {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        /* Table */
+        .table-container { overflow-x: auto; margin-top: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            background: #1e3a8a;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+        tr:hover td { background: #f9fafb; }
+        td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge.c3b { background: #dbeafe; color: #1e40af; }
+        .badge.ranquing { background: #fef3c7; color: #92400e; }
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            font-size: 16px;
+        }
+
+        /* Hide navbar modality buttons on this page (we show all modalities in tabs) */
+        #navbarModalitats { display: none !important; }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .stat-card .value { font-size: 20px; }
+            .header h1 { font-size: 22px; }
+            .modality-tab { min-width: 80px; padding: 10px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="loading">Carregant perfil...</div>
+        <div id="content" style="display:none;">
+            <div class="header">
+                <h1 id="playerName">—</h1>
+                <div class="subtitle" id="playerSubtitle">—</div>
+            </div>
+
+            <div class="modality-tabs" id="modalityTabs"></div>
+            <div id="modalityPanes"></div>
+        </div>
+    </div>
+
+<script>
+// ----------------------------------------------------------------------------
+// Player profile page — shows all modalities of the logged-in user
+// ----------------------------------------------------------------------------
+
+const ROLLING_WINDOW_TRES_BANDES = 15;
+const ROLLING_WINDOW_OTHERS = 10;
+const TRES_BANDES_NAMES = ['Tres Bandes', '3 Bandes'];
+
+const charts = {}; // modalitatId -> Chart instance
+
+async function init() {
+    const config = BillarConfig.requireUser();
+    if (!config) return; // requireUser redirects if missing
+
+    document.getElementById('playerName').textContent = config.usuariNom || 'Jugador';
+    document.getElementById('playerSubtitle').textContent = 'Perfil complet · totes les modalitats';
+
+    let partides = [];
+    try {
+        const resp = await fetch(`/api/partides?usuari_id=${config.usuariId}`);
+        partides = await resp.json();
+    } catch (e) {
+        document.getElementById('loading').textContent = 'Error carregant partides: ' + e.message;
+        return;
+    }
+
+    if (!Array.isArray(partides) || partides.length === 0) {
+        document.getElementById('loading').innerHTML = 'Encara no tens cap partida.<br><a href="index.html" style="color:#fbbf24;">Anar al dashboard clàssic</a>';
+        return;
+    }
+
+    // Group by modalitat_id
+    const byMod = new Map();
+    for (const p of partides) {
+        const modId = p.modalitat_id;
+        const modNom = (p.modalitats && p.modalitats.nom) || `Modalitat ${modId}`;
+        if (!byMod.has(modId)) byMod.set(modId, { id: modId, nom: modNom, partides: [] });
+        byMod.get(modId).partides.push(p);
+    }
+
+    // Sort modalities: Tres Bandes first, then by count desc
+    const modalities = Array.from(byMod.values()).sort((a, b) => {
+        const aTB = TRES_BANDES_NAMES.includes(a.nom);
+        const bTB = TRES_BANDES_NAMES.includes(b.nom);
+        if (aTB !== bTB) return aTB ? -1 : 1;
+        return b.partides.length - a.partides.length;
+    });
+
+    // Sort each modality's matches by date asc (rolling avg needs chronological order)
+    for (const m of modalities) {
+        m.partides.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+    }
+
+    renderTabs(modalities);
+    renderPanes(modalities);
+
+    // Activate first tab
+    if (modalities.length > 0) activateTab(modalities[0].id);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+}
+
+function renderTabs(modalities) {
+    const cont = document.getElementById('modalityTabs');
+    cont.innerHTML = modalities.map(m => `
+        <button class="modality-tab" data-mod-id="${m.id}" onclick="activateTab(${m.id})">
+            ${escapeHtml(m.nom)}
+            <span class="count">${m.partides.length} partides</span>
+        </button>
+    `).join('');
+}
+
+function renderPanes(modalities) {
+    const cont = document.getElementById('modalityPanes');
+    cont.innerHTML = modalities.map(m => renderPane(m)).join('');
+    // Build charts after DOM exists
+    for (const m of modalities) buildChart(m);
+}
+
+function renderPane(m) {
+    const stats = computeStats(m.partides);
+    const window = TRES_BANDES_NAMES.includes(m.nom) ? ROLLING_WINDOW_TRES_BANDES : ROLLING_WINDOW_OTHERS;
+
+    return `
+    <div class="modality-pane" id="pane-${m.id}">
+        <div class="card">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Partides</div>
+                    <div class="value">${stats.total}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Mitjana global</div>
+                    <div class="value">${stats.mitjanaGlobal.toFixed(3)}</div>
+                    <div class="subvalue">${stats.totalCar} / ${stats.totalEnt}</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="label">Millor partida</div>
+                    <div class="value">${stats.millor ? stats.millor.mitjana.toFixed(3) : '—'}</div>
+                    <div class="subvalue">${stats.millor ? escapeHtml(stats.millor.oponent || '') : ''}</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="label">Pitjor partida</div>
+                    <div class="value">${stats.pitjor ? stats.pitjor.mitjana.toFixed(3) : '—'}</div>
+                    <div class="subvalue">${stats.pitjor ? escapeHtml(stats.pitjor.oponent || '') : ''}</div>
+                </div>
+                ${stats.serieMajor ? `
+                <div class="stat-card purple">
+                    <div class="label">Sèrie major</div>
+                    <div class="value">${stats.serieMajor}</div>
+                </div>` : ''}
+                <div class="stat-card orange">
+                    <div class="label">Última partida</div>
+                    <div class="value" style="font-size:16px;">${stats.ultimaData || '—'}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="chart-title">Evolució de la mitjana (finestra mòbil de ${window} partides)</div>
+            <div class="chart-container">
+                <canvas id="chart-${m.id}"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="chart-title">Llistat de partides (${m.partides.length})</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Oponent</th>
+                            <th>Competició</th>
+                            <th class="num">Car.</th>
+                            <th class="num">Ent.</th>
+                            <th class="num">Mitjana</th>
+                            <th>Origen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${m.partides.slice().reverse().map(p => `
+                            <tr>
+                                <td>${formatDate(p.data)}</td>
+                                <td>${escapeHtml(p.oponent || '—')}</td>
+                                <td>${escapeHtml(p.competicio || '—')}</td>
+                                <td class="num">${p.caramboles ?? '—'}</td>
+                                <td class="num">${p.entrades ?? '—'}</td>
+                                <td class="num">${p.mitjana != null ? Number(p.mitjana).toFixed(3) : '—'}</td>
+                                <td><span class="badge ${p.origen === 'ranquing' ? 'ranquing' : 'c3b'}">${p.origen || 'c3b'}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`;
+}
+
+function computeStats(partides) {
+    const totalCar = partides.reduce((s, p) => s + (p.caramboles || 0), 0);
+    const totalEnt = partides.reduce((s, p) => s + (p.entrades || 0), 0);
+    const mitjanaGlobal = totalEnt > 0 ? totalCar / totalEnt : 0;
+
+    let millor = null, pitjor = null, serieMajor = 0;
+    for (const p of partides) {
+        const m = Number(p.mitjana) || 0;
+        if (millor === null || m > millor.mitjana) millor = { mitjana: m, oponent: p.oponent };
+        if (pitjor === null || (m > 0 && m < pitjor.mitjana)) pitjor = { mitjana: m, oponent: p.oponent };
+        if ((p.serie_major || 0) > serieMajor) serieMajor = p.serie_major;
+    }
+
+    const ultima = partides.length > 0 ? partides[partides.length - 1] : null;
+
+    return {
+        total: partides.length,
+        totalCar, totalEnt, mitjanaGlobal,
+        millor, pitjor, serieMajor,
+        ultimaData: ultima ? formatDate(ultima.data) : null,
+    };
+}
+
+function buildChart(m) {
+    const canvas = document.getElementById(`chart-${m.id}`);
+    if (!canvas) return;
+
+    const window = TRES_BANDES_NAMES.includes(m.nom) ? ROLLING_WINDOW_TRES_BANDES : ROLLING_WINDOW_OTHERS;
+
+    // Per-match instantaneous mitjana
+    const mitjanesPartida = m.partides.map(p => {
+        const c = p.caramboles || 0, e = p.entrades || 0;
+        return e > 0 ? c / e : 0;
+    });
+
+    // Rolling average over last `window` matches (inclusive of current)
+    const mitjanaRolling = m.partides.map((_, idx) => {
+        const start = Math.max(0, idx - (window - 1));
+        const slice = m.partides.slice(start, idx + 1);
+        const c = slice.reduce((s, p) => s + (p.caramboles || 0), 0);
+        const e = slice.reduce((s, p) => s + (p.entrades || 0), 0);
+        return e > 0 ? c / e : 0;
+    });
+
+    const labels = m.partides.map((p, i) => formatDate(p.data) || `P${i+1}`);
+
+    if (charts[m.id]) charts[m.id].destroy();
+
+    charts[m.id] = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Mitjana per partida',
+                    data: mitjanesPartida,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    borderWidth: 1.5,
+                    pointRadius: 2,
+                    tension: 0.2,
+                },
+                {
+                    label: `Mitjana mòbil (${window} partides)`,
+                    data: mitjanaRolling,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.15)',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    fill: true,
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: false, ticks: { callback: v => Number(v).toFixed(2) } },
+                x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } }
+            }
+        }
+    });
+}
+
+function activateTab(modId) {
+    document.querySelectorAll('.modality-tab').forEach(t => {
+        t.classList.toggle('active', Number(t.dataset.modId) === modId);
+    });
+    document.querySelectorAll('.modality-pane').forEach(p => {
+        p.classList.toggle('active', p.id === `pane-${modId}`);
+    });
+    // Resize chart after becoming visible
+    if (charts[modId]) charts[modId].resize();
+}
+
+function formatDate(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    return d.toLocaleDateString('ca-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

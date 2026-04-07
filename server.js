@@ -8,6 +8,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+// Landing page: player profile (replaces old dashboard as default)
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/player.html');
+});
+
 app.use(express.static(__dirname));
 
 // ============================================
