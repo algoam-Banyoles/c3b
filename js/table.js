@@ -13,11 +13,22 @@ function renderPartidesTable() {
     const millor = Math.max(...PARTIDES_DATA.map(p => p.mitjana));
     const pitjor = Math.min(...PARTIDES_DATA.map(p => p.mitjana));
 
+    const windowSize = Math.min(ROLLING_WINDOW, PARTIDES_DATA.length);
+
     const rows = PARTIDES_DATA.slice().reverse().map((p, reverseIdx) => {
         const originalIdx = PARTIDES_DATA.length - 1 - reverseIdx;
         const isBest = p.mitjana === millor;
         const isWorst = p.mitjana === pitjor;
         const className = isBest ? 'best' : isWorst ? 'worst' : '';
+
+        const inWindow = reverseIdx < windowSize;
+        const isWindowFirst = reverseIdx === windowSize - 1;
+        const trClasses = [
+            inWindow ? 'ranquing-window' : '',
+            isWindowFirst ? 'ranquing-window-first' : ''
+        ].filter(Boolean).join(' ');
+        const trAttr = trClasses ? ` class="${trClasses}"` : '';
+        const trTitle = inWindow ? ` title="Partida dins la finestra de la mitjana (darreres ${windowSize})"` : '';
 
         let resultat = '';
         let resultatClass = '';
@@ -41,7 +52,7 @@ function renderPartidesTable() {
         }
 
         return `
-            <tr>
+            <tr${trAttr}${trTitle}>
                 <td><strong>${p.num}</strong></td>
                 <td>${p.data ? new Date(p.data).toLocaleDateString('ca-ES', {day: '2-digit', month: '2-digit', year: '2-digit'}) : '-'}</td>
                 <td style="font-size: 12px;">${p.oponent || '-'}</td>
