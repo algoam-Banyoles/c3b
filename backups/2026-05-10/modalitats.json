@@ -1,0 +1,5 @@
+[{"id":2,"nom":"Lliure","descripcio":"Billar lliure sense bandes obligatòries","camps_personalitzats":{},"created_at":"2025-10-16T06:02:01.045974+00:00"}, 
+ {"id":3,"nom":"Banda","descripcio":"Billar a una banda","camps_personalitzats":{},"created_at":"2025-10-16T06:02:01.045974+00:00"}, 
+ {"id":4,"nom":"Q47/2","descripcio":"Quadre 47/2 — modalitat de billar artístic","camps_personalitzats":{},"created_at":"2026-04-07T08:09:13.979535+00:00"}, 
+ {"id":5,"nom":"Q71/2","descripcio":"Quadre 71/2 — modalitat de billar artístic","camps_personalitzats":{},"created_at":"2026-04-07T08:09:13.979535+00:00"}, 
+ {"id":1,"nom":"3 Bandes","descripcio":"Billar a tres bandes o carambola","camps_personalitzats":{},"created_at":"2025-10-16T06:02:01.045974+00:00"}]
