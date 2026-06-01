@@ -110,21 +110,31 @@ function aplicarFiltrePeriode() {
     }
     if (currentPeriod === 'all') {
         PARTIDES_DATA = [...PARTIDES_RAW];
-        return;
-    }
-    if (currentPeriod === '90d') {
+    } else if (currentPeriod === '90d') {
         const cutoff = Date.now() - 90 * 86400000;
         PARTIDES_DATA = PARTIDES_RAW.filter(p => {
             if (!p.data) return false;
             const t = new Date(p.data).getTime();
             return !isNaN(t) && t >= cutoff;
         });
-        return;
+    } else {
+        const target = currentPeriod === 'current'
+            ? temporadaActualLabel()
+            : temporadaAnteriorLabel();
+        PARTIDES_DATA = PARTIDES_RAW.filter(p => p.data && temporadaDe(p.data) === target);
     }
-    const target = currentPeriod === 'current'
-        ? temporadaActualLabel()
-        : temporadaAnteriorLabel();
-    PARTIDES_DATA = PARTIDES_RAW.filter(p => p.data && temporadaDe(p.data) === target);
+
+    // Ordenem per data ASC i, dins el mateix dia, per mitjana ASC (la millor
+    // queda al final). Així el tall posicional de les N darreres partides
+    // sempre agafa les millors quan hi ha empat al dia frontera.
+    PARTIDES_DATA.sort((a, b) => {
+        if (a.data !== b.data) {
+            if (!a.data) return -1;
+            if (!b.data) return 1;
+            return a.data < b.data ? -1 : 1;
+        }
+        return (a.mitjana || 0) - (b.mitjana || 0);
+    });
 }
 
 function canviarPeriode(value) {

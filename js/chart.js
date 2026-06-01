@@ -43,17 +43,18 @@ function updateChart() {
     const labels = partidesVisibles.map(p => `P${p.num}`);
     const mitjanes = partidesVisibles.map(p => p.mitjana);
 
-    // Mitjana mòbil del rànquing: per cada partida visible, apliquem la regla
-    // de selecció (les millors partides del dia frontera) sobre totes les
-    // partides jugades fins a aquell moment.
+    // Mitjana mòbil de les últimes ROLLING_WINDOW partides (incloent l'actual).
+    // PARTIDES_DATA està ordenada per data ASC i, dins el mateix dia, per
+    // mitjana ASC: el tall posicional ja escull les millors al dia frontera.
     const mitjanaAcumulada = partidesVisibles.map((p, idx) => {
         const globalIdx = currentRange.start + idx;
-        const fins = PARTIDES_DATA.slice(0, globalIdx + 1);
-        const partidesCalc = seleccionarPartidesRanquing(fins, ROLLING_WINDOW);
+        const startIdx = Math.max(0, globalIdx - (ROLLING_WINDOW - 1));
+        const endIdx = globalIdx + 1;
+        const partidesCalc = PARTIDES_DATA.slice(startIdx, endIdx);
 
         const totalCar = partidesCalc.reduce((sum, part) => sum + part.caramboles, 0);
         const totalEnt = partidesCalc.reduce((sum, part) => sum + part.entrades, 0);
-        return totalEnt > 0 ? totalCar / totalEnt : 0;
+        return totalCar / totalEnt;
     });
 
     const tendencia = calcularTendencia(mitjanes);
@@ -129,7 +130,9 @@ function updateChart() {
                             } else if (context.datasetIndex === 1) {
                                 const globalIdx = currentRange.start + idx;
                                 const numPartides = Math.min(globalIdx + 1, ROLLING_WINDOW);
-                                return `Mitjana rànquing (${numPartides} partides): ${context.parsed.y.toFixed(3)}`;
+                                const startP = Math.max(1, partida.num - numPartides + 1);
+                                const endP = partida.num;
+                                return `Mitjana últimes ${numPartides} (P${startP}-P${endP}): ${context.parsed.y.toFixed(3)}`;
                             } else {
                                 return `Tendència: ${context.parsed.y.toFixed(3)}`;
                             }

@@ -44,27 +44,14 @@ function mostrarResultatSimulacio(caramboles, entrades, tipus = 'custom') {
         return;
     }
 
-    const ultimesN = seleccionarPartidesRanquing(PARTIDES_DATA, ROLLING_WINDOW);
+    const ultimesN = PARTIDES_DATA.slice(-ROLLING_WINDOW);
     const carAct = ultimesN.reduce((sum, p) => sum + p.caramboles, 0);
     const entAct = ultimesN.reduce((sum, p) => sum + p.entrades, 0);
     const mitjanaActual = carAct / entAct;
 
-    // Per al "després", afegim virtualment la nova partida (data: avui) i tornem
-    // a aplicar la regla. Així, si avui ja hi havia partides, només entra al
-    // càlcul si la seva mitjana és prou bona per desplaçar-ne alguna.
-    const avui = new Date().toISOString().slice(0, 10);
-    const nouMaxNum = (PARTIDES_DATA.reduce((m, p) => Math.max(m, p.num || 0), 0)) + 1;
-    const partidaVirtual = {
-        num: nouMaxNum,
-        data: avui,
-        caramboles,
-        entrades,
-        mitjana: caramboles / entrades
-    };
-    const partidesAmbNova = [...PARTIDES_DATA, partidaVirtual];
-    const ultimesNNoves = seleccionarPartidesRanquing(partidesAmbNova, ROLLING_WINDOW);
-    const carNou = ultimesNNoves.reduce((sum, p) => sum + p.caramboles, 0);
-    const entNou = ultimesNNoves.reduce((sum, p) => sum + p.entrades, 0);
+    const ultimesNmenys1 = PARTIDES_DATA.slice(-(ROLLING_WINDOW - 1));
+    const carNou = ultimesNmenys1.reduce((sum, p) => sum + p.caramboles, 0) + caramboles;
+    const entNou = ultimesNmenys1.reduce((sum, p) => sum + p.entrades, 0) + entrades;
     const mitjanaNova = carNou / entNou;
 
     const diferencia = mitjanaNova - mitjanaActual;

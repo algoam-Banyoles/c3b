@@ -14,8 +14,6 @@ function renderPartidesTable() {
     const pitjor = Math.min(...PARTIDES_DATA.map(p => p.mitjana));
 
     const windowSize = Math.min(ROLLING_WINDOW, PARTIDES_DATA.length);
-    const ranquingPartides = seleccionarPartidesRanquing(PARTIDES_DATA, ROLLING_WINDOW);
-    const ranquingNums = new Set(ranquingPartides.map(p => p.num));
 
     const rows = PARTIDES_DATA.slice().reverse().map((p, reverseIdx) => {
         const originalIdx = PARTIDES_DATA.length - 1 - reverseIdx;
@@ -23,7 +21,7 @@ function renderPartidesTable() {
         const isWorst = p.mitjana === pitjor;
         const className = isBest ? 'best' : isWorst ? 'worst' : '';
 
-        const inWindow = ranquingNums.has(p.num);
+        const inWindow = reverseIdx < windowSize;
         const trAttr = inWindow ? ` class="ranquing-window"` : '';
         const trTitle = inWindow ? ` title="Partida dins el càlcul de la mitjana del rànquing (${windowSize} partides)"` : '';
 
