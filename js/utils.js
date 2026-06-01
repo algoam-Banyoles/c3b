@@ -143,32 +143,6 @@ function calcularFiabilitatPerTipus(partides) {
         .sort((a, b) => b.fiabilitat - a.fiabilitat);
 }
 
-// Seleccionar les partides que entren al càlcul de la mitjana del rànquing.
-// Regla: si el tall a la partida N cau en un dia amb més d'una partida, s'inclouen
-// les millors d'aquell dia (per mitjana) fins a completar les N partides; les
-// partides estrictament posteriors a la data límit hi són sempre.
-function seleccionarPartidesRanquing(partides, N) {
-    if (!partides || partides.length === 0) return [];
-    if (partides.length <= N) return partides.slice();
-
-    const sorted = partides.slice().sort((a, b) => {
-        if (a.data === b.data) return (a.num || 0) - (b.num || 0);
-        return a.data < b.data ? -1 : 1;
-    });
-
-    const boundaryDate = sorted[sorted.length - N].data;
-    const afterBoundary = sorted.filter(p => p.data > boundaryDate);
-    const onBoundary = sorted.filter(p => p.data === boundaryDate);
-    const need = N - afterBoundary.length;
-
-    const bestOnBoundary = onBoundary
-        .slice()
-        .sort((a, b) => b.mitjana - a.mitjana)
-        .slice(0, need);
-
-    return [...afterBoundary, ...bestOnBoundary];
-}
-
 // Línia de tendència (regressió lineal simple)
 function calcularTendencia(values) {
     const n = values.length;
