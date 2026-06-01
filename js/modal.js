@@ -17,7 +17,7 @@ function openEditModal(index) {
     editingIndex = index;
     const partida = PARTIDES_DATA[index];
 
-    document.getElementById('modalTitle').textContent = '✏️ Editar Partida #' + partida.num;
+    document.getElementById('modalTitle').textContent = '✏️ Editar Partida #' + (index + 1);
     document.getElementById('formData').value = partida.data;
     document.getElementById('formLloc').value = partida.lloc || '';
     document.getElementById('formOponent').value = partida.oponent || '';
@@ -101,7 +101,7 @@ async function guardarPartida(event) {
 
 async function eliminarPartida(index) {
     const partida = PARTIDES_DATA[index];
-    if (confirm(`Segur que vols eliminar la partida #${partida.num} contra ${partida.oponent}?`)) {
+    if (confirm(`Segur que vols eliminar la partida #${index + 1} contra ${partida.oponent}?`)) {
         try {
             if (partida.id) {
                 await BillarConfig.deletePartida(partida.id);

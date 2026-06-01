@@ -46,9 +46,10 @@ function renderPartidesTable() {
             else if (comp.includes('copa')) tipusComp = 'C';
         }
 
+        const posCronologica = originalIdx + 1;
         return `
             <tr${trAttr}${trTitle}>
-                <td><strong>${p.num}</strong></td>
+                <td><strong>${posCronologica}</strong></td>
                 <td>${p.data ? new Date(p.data).toLocaleDateString('ca-ES', {day: '2-digit', month: '2-digit', year: '2-digit'}) : '-'}</td>
                 <td style="font-size: 12px;">${p.oponent || '-'}</td>
                 <td style="text-align: center; font-weight: bold; color: #2563eb;">${tipusComp}</td>

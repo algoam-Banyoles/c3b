@@ -12,7 +12,7 @@ function compartirPartida(index) {
 
     const blob = generarImatgePartida(partida, usuariNom, modalitatNom);
     blob.then(b => {
-        const fileName = `partida-${partida.num}-${(partida.oponent || 'oponent').replace(/\s+/g, '-')}.png`;
+        const fileName = `partida-${index + 1}-${(partida.oponent || 'oponent').replace(/\s+/g, '-')}.png`;
 
         // Provar Web Share API amb fitxers (mòbils)
         if (navigator.canShare && navigator.canShare({ files: [new File([b], fileName, { type: 'image/png' })] })) {

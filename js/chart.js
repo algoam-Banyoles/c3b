@@ -19,15 +19,15 @@ function setupRangeSlider() {
         const endIdx = startIdx + ROLLING_WINDOW;
         currentRange = { start: startIdx, end: endIdx };
 
-        document.getElementById('rangeStart').textContent = `Partida ${PARTIDES_DATA[startIdx].num}`;
-        document.getElementById('rangeEnd').textContent = `Partida ${PARTIDES_DATA[endIdx - 1].num}`;
+        document.getElementById('rangeStart').textContent = `Partida ${startIdx + 1}`;
+        document.getElementById('rangeEnd').textContent = `Partida ${endIdx}`;
 
         updateQuickStats(startIdx, endIdx);
         updateChart();
     };
 
-    document.getElementById('rangeStart').textContent = `Partida ${PARTIDES_DATA[currentRange.start].num}`;
-    document.getElementById('rangeEnd').textContent = `Partida ${PARTIDES_DATA[currentRange.end - 1].num}`;
+    document.getElementById('rangeStart').textContent = `Partida ${currentRange.start + 1}`;
+    document.getElementById('rangeEnd').textContent = `Partida ${currentRange.end}`;
 }
 
 function updateChart() {
@@ -40,7 +40,7 @@ function updateChart() {
     }
 
     const partidesVisibles = PARTIDES_DATA.slice(currentRange.start, currentRange.end);
-    const labels = partidesVisibles.map(p => `P${p.num}`);
+    const labels = partidesVisibles.map((p, idx) => `P${currentRange.start + idx + 1}`);
     const mitjanes = partidesVisibles.map(p => p.mitjana);
 
     // Mitjana mòbil de les últimes ROLLING_WINDOW partides (incloent l'actual).
@@ -130,8 +130,8 @@ function updateChart() {
                             } else if (context.datasetIndex === 1) {
                                 const globalIdx = currentRange.start + idx;
                                 const numPartides = Math.min(globalIdx + 1, ROLLING_WINDOW);
-                                const startP = Math.max(1, partida.num - numPartides + 1);
-                                const endP = partida.num;
+                                const endP = globalIdx + 1;
+                                const startP = Math.max(1, endP - numPartides + 1);
                                 return `Mitjana últimes ${numPartides} (P${startP}-P${endP}): ${context.parsed.y.toFixed(3)}`;
                             } else {
                                 return `Tendència: ${context.parsed.y.toFixed(3)}`;
