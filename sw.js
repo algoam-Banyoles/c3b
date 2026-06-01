@@ -1,5 +1,5 @@
 // Configuració del Service Worker
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 const CACHE_NAME = `billar-stats-v${APP_VERSION}`;
 const CACHE_PREFIX = 'billar-stats-';
 
