@@ -14,6 +14,9 @@ function renderPartidesTable() {
     const pitjor = Math.min(...PARTIDES_DATA.map(p => p.mitjana));
 
     const windowSize = Math.min(ROLLING_WINDOW, PARTIDES_DATA.length);
+    // Si FCBillar ha marcat quines partides computen al rànquing oficial (camp
+    // `computa`), respectem-ho exactament; si no, caiem a les N darreres posicionals.
+    const hasComputa = PARTIDES_DATA.some(p => p.computa);
 
     const rows = PARTIDES_DATA.slice().reverse().map((p, reverseIdx) => {
         const originalIdx = PARTIDES_DATA.length - 1 - reverseIdx;
@@ -21,9 +24,13 @@ function renderPartidesTable() {
         const isWorst = p.mitjana === pitjor;
         const className = isBest ? 'best' : isWorst ? 'worst' : '';
 
-        const inWindow = reverseIdx < windowSize;
+        const inWindow = hasComputa ? !!p.computa : (reverseIdx < windowSize);
         const trAttr = inWindow ? ` class="ranquing-window"` : '';
-        const trTitle = inWindow ? ` title="Partida dins el càlcul de la mitjana del rànquing (${windowSize} partides)"` : '';
+        const trTitle = inWindow
+            ? (hasComputa
+                ? ` title="Partida que computa al rànquing oficial federatiu"`
+                : ` title="Partida dins el càlcul de la mitjana del rànquing (${windowSize} partides)"`)
+            : '';
 
         let resultat = '';
         let resultatClass = '';

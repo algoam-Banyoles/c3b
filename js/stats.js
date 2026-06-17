@@ -19,6 +19,24 @@ function updateGlobalStats() {
     const totalEntrades = PARTIDES_DATA.reduce((sum, p) => sum + p.entrades, 0);
     const mitjanaGlobal = totalCaramboles / totalEntrades;
 
+    // Mitjana del rànquing OFICIAL: ΣC/ΣE sobre les partides que la federació
+    // compta (camp `computa`, marcat per FCBillar). Es calcula sobre totes les
+    // partides (PARTIDES_RAW), independentment del filtre de període.
+    const baseComputa = Array.isArray(PARTIDES_RAW) && PARTIDES_RAW.length ? PARTIDES_RAW : PARTIDES_DATA;
+    const computaGames = baseComputa.filter(p => p.computa);
+    let ranquingCardHTML = '';
+    if (computaGames.length) {
+        const cC = computaGames.reduce((s, p) => s + p.caramboles, 0);
+        const cE = computaGames.reduce((s, p) => s + p.entrades, 0);
+        const mjRanquing = cE ? cC / cE : 0;
+        ranquingCardHTML = `
+        <div class="stat-card" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);">
+            <div class="label" style="font-size: 11px; margin-bottom: 3px;">🏅 Mitjana Rànquing (oficial)</div>
+            <div class="value" style="font-size: 22px;">${mjRanquing.toFixed(3)}</div>
+            <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${computaGames.length} partides · ${cC}/${cE}</div>
+        </div>`;
+    }
+
     const puntsTotal = calcularEstadistiquesPunts(PARTIDES_DATA);
     const millorPartida = PARTIDES_DATA.reduce((max, p) => p.mitjana > max.mitjana ? p : max);
     const pitjorPartida = PARTIDES_DATA.reduce((min, p) => p.mitjana < min.mitjana ? p : min);
@@ -59,6 +77,7 @@ function updateGlobalStats() {
             <div class="value">${mitjanaGlobal.toFixed(3)}</div>
             <div class="subvalue">${totalCaramboles} caramboles</div>
         </div>
+        ${ranquingCardHTML}
         <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
             <div class="label" style="font-size: 11px; margin-bottom: 3px;">🏆 Millor Partida</div>
             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${millorPartida.oponent}</div>
