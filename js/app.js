@@ -124,16 +124,20 @@ function aplicarFiltrePeriode() {
         PARTIDES_DATA = PARTIDES_RAW.filter(p => p.data && temporadaDe(p.data) === target);
     }
 
-    // Ordenem per data ASC i, dins el mateix dia, per mitjana ASC (la millor
-    // queda al final). Així el tall posicional de les N darreres partides
-    // sempre agafa les millors quan hi ha empat al dia frontera.
+    // Ordenem per data ASC i, dins el mateix dia, per `num` ASC (ordre cronològic
+    // de joc). Quan la finestra de les N darreres partides PARTEIX un dia, la
+    // federació conserva la partida JUGADA MÉS TARD (num més alt), NO la de millor
+    // mitjana. Així el tall posicional coincideix amb el criteri federatiu (`num`
+    // és aquí l'anàleg del rowid de ranking_game_links a FCBillar). Si no hi ha
+    // `num` (dades importades/manuals), conservem l'ordre d'arribada (sort estable).
     PARTIDES_DATA.sort((a, b) => {
         if (a.data !== b.data) {
             if (!a.data) return -1;
             if (!b.data) return 1;
             return a.data < b.data ? -1 : 1;
         }
-        return (a.mitjana || 0) - (b.mitjana || 0);
+        if (a.num != null && b.num != null) return a.num - b.num;
+        return 0;
     });
 }
 
