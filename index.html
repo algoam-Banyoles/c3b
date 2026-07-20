@@ -318,13 +318,42 @@
             background: #fff3cd !important;
         }
 
-        /* Files que entren al càlcul de la mitjana del rànquing */
+        /* Files que entren al càlcul de la mitjana del rànquing OFICIAL vigent */
         tr.ranquing-window td {
             background: #fef3c7;
             border-bottom-color: #fde68a;
         }
         tr.ranquing-window:hover td {
             background: #fde68a;
+        }
+        /* Trama superposada: partides que computaran al PROPER rànquing (projecció).
+           Es pot combinar amb .ranquing-window (groc + trama) o anar sola. */
+        tr.ranquing-prox td,
+        tr.ranquing-prox:hover td {
+            background-image: repeating-linear-gradient(
+                135deg,
+                transparent 0, transparent 5px,
+                rgba(37, 99, 235, 0.22) 5px, rgba(37, 99, 235, 0.22) 9px
+            );
+            border-bottom-color: #93c5fd;
+        }
+        /* Llegenda del ressaltat de partides */
+        .partides-legend {
+            display: flex; flex-wrap: wrap; gap: 14px;
+            margin: 10px 0 4px; font-size: 12px; color: #555;
+        }
+        .partides-legend .swatch {
+            display: inline-block; width: 26px; height: 14px; border-radius: 3px;
+            vertical-align: middle; margin-right: 6px; border: 1px solid #e2e8f0;
+        }
+        .partides-legend .swatch.now { background: #fef3c7; border-color: #fde68a; }
+        .partides-legend .swatch.next {
+            background-image: repeating-linear-gradient(
+                135deg,
+                transparent 0, transparent 5px,
+                rgba(37, 99, 235, 0.22) 5px, rgba(37, 99, 235, 0.22) 9px
+            );
+            border-color: #93c5fd;
         }
         
         .best {
@@ -672,6 +701,10 @@
             <div class="card">
                 <h2><span class="icon">📋</span> Totes les Partides</h2>
                 <button class="btn btn-success" onclick="openAddModal()">➕ Afegir Nova Partida</button>
+                <div class="partides-legend" id="partidesLegend" style="display:none;">
+                    <span><span class="swatch now"></span>Computen al rànquing actual</span>
+                    <span><span class="swatch next"></span>Computaran al proper rànquing</span>
+                </div>
                 <div class="table-container">
                     <table id="partidesTable">
                         <thead>
