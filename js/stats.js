@@ -3,6 +3,10 @@
 // ============================================================================
 
 function updateGlobalStats() {
+    // Els indicadors del capçal s'han traslladat al panell d'Indicadors (3 seccions:
+    // Històric / Temporada actual / Temporada anterior). Vegeu renderEvolutionIndicators().
+    if (!document.getElementById('globalStats')) return;
+
     const totalPartides = PARTIDES_DATA.length;
 
     if (totalPartides === 0) {
@@ -206,14 +210,20 @@ function _evoAgg(partides) {
     if (!partides.length) return null;
     const c = partides.reduce((s, p) => s + p.caramboles, 0);
     const e = partides.reduce((s, p) => s + p.entrades, 0);
-    const avgs = partides.map(p => (p.entrades ? p.caramboles / p.entrades : 0));
+    const avg = p => (p.entrades ? p.caramboles / p.entrades : 0);
+    let mi = partides[0], pi = partides[0];
+    for (const p of partides) { if (avg(p) > avg(mi)) mi = p; if (avg(p) < avg(pi)) pi = p; }
     const pts = calcularEstadistiquesPunts(partides);
     const efect = pts.puntsDisputats ? (pts.puntsGuanyats / pts.puntsDisputats) * 100 : 0;
+    const sm = partides.reduce((m, p) => Math.max(m, p.serie_major || 0), 0);
     return {
         n: partides.length, c, e,
         mj: e ? c / e : 0,
-        millor: Math.max(...avgs), pitjor: Math.min(...avgs),
-        victories: pts.victories, empats: pts.empats, derrotes: pts.derrotes, efect
+        millor: { mj: avg(mi), op: mi.oponent }, pitjor: { mj: avg(pi), op: pi.oponent },
+        victories: pts.victories, empats: pts.empats, derrotes: pts.derrotes,
+        puntsGuanyats: pts.puntsGuanyats, puntsDisputats: pts.puntsDisputats, efect, sm,
+        rival: trobarRivalMesFrequent(partides),
+        comp: calcularFiabilitatPerTipus(partides)
     };
 }
 
@@ -223,18 +233,34 @@ function _mjOf(partides) {
 }
 
 function _evoSeccio(titol, cls, a, extra = '') {
-    const cos = a
-        ? `<div class="evo-mjl">Mitjana</div><div class="evo-mj">${a.mj.toFixed(3)}</div>
+    let cos;
+    if (!a) {
+        cos = `<div class="evo-empty">Sense partides</div>`;
+    } else {
+        const rival = a.rival
+            ? `<div class="evo-line">Rival habitual: <b>${a.rival.nom}</b> (${a.rival.total})</div>`
+            : '';
+        const comp = a.comp && a.comp.length
+            ? `<div class="evo-sep">Efectivitat per competició</div>
+               <div class="evo-chips">${a.comp.map(t =>
+                   `<span class="evo-chip">${t.tipus} <b>${Math.round(t.fiabilitat)}%</b></span>`).join('')}</div>`
+            : '';
+        cos = `<div class="evo-mjl">Mitjana</div><div class="evo-mj">${a.mj.toFixed(3)}</div>
            <div class="evo-sub">${a.n} partides · ${a.c}/${a.e}</div>
            <div class="evo-row">
-               <div class="evo-mini"><div class="l">Millor</div><div class="v best">${a.millor.toFixed(3)}</div></div>
-               <div class="evo-mini"><div class="l">Pitjor</div><div class="v worst">${a.pitjor.toFixed(3)}</div></div>
+               <div class="evo-mini"><div class="l">Millor</div><div class="v best">${a.millor.mj.toFixed(3)}</div><div class="n">${a.millor.op || '—'}</div></div>
+               <div class="evo-mini"><div class="l">Pitjor</div><div class="v worst">${a.pitjor.mj.toFixed(3)}</div><div class="n">${a.pitjor.op || '—'}</div></div>
            </div>
            <div class="evo-row">
                <div class="evo-mini"><div class="l">Efectivitat</div><div class="v">${a.efect.toFixed(1)}%</div></div>
                <div class="evo-mini"><div class="l">V-E-D</div><div class="v"><span class="ved-v">${a.victories}</span>-<span class="ved-e">${a.empats}</span>-<span class="ved-d">${a.derrotes}</span></div></div>
-           </div>`
-        : `<div class="evo-empty">Sense partides</div>`;
+           </div>
+           <div class="evo-row">
+               <div class="evo-mini"><div class="l">Punts</div><div class="v">${a.puntsGuanyats}/${a.puntsDisputats}</div></div>
+               <div class="evo-mini"><div class="l">Millor sèrie</div><div class="v">${a.sm || '—'}</div></div>
+           </div>
+           ${rival}${comp}`;
+    }
     return `<div class="evo-sec"><div class="evo-h ${cls}">${titol}</div><div class="evo-b">${cos}${extra}</div></div>`;
 }
 
@@ -277,7 +303,7 @@ function renderEvolutionIndicators() {
         </div>`;
     }
 
-    el.innerHTML = `<h2>📊 Indicadors d'evolució</h2>
+    el.innerHTML = `<h2>📊 Indicadors</h2>
         <div class="evo-grid">
             ${_evoSeccio('Històric', 'evo-hist', hist)}
             ${_evoSeccio(`Temporada actual · ${tempActual}`, 'evo-cur', cur, proxBlock)}
