@@ -57,7 +57,9 @@ function updateChart() {
         return totalCar / totalEnt;
     });
 
-    const tendencia = calcularTendencia(mitjanes);
+    // Tendència sobre l'EVOLUCIÓ de la mitjana mòbil de 15 (no sobre la mitjana
+    // sorollosa de cada partida): és la línia que interessa, la del rànquing.
+    const tendencia = calcularTendencia(mitjanaAcumulada);
 
     const ctx = document.getElementById('evolutionChart').getContext('2d');
 
@@ -134,7 +136,7 @@ function updateChart() {
                                 const startP = Math.max(1, endP - numPartides + 1);
                                 return `Mitjana últimes ${numPartides} (P${startP}-P${endP}): ${context.parsed.y.toFixed(3)}`;
                             } else {
-                                return `Tendència: ${context.parsed.y.toFixed(3)}`;
+                                return `Tendència (mitjana 15): ${context.parsed.y.toFixed(3)}`;
                             }
                         }
                     }
