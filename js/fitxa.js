@@ -34,8 +34,14 @@ async function renderFitxaFederativa() {
             prox = `<div class="fitxa-prox ${cls}">→ proper rànquing: <b>#${rk.posicio_provisional}</b>
                 (${(rk.mitjana_provisional ?? 0).toFixed(3)}) ${dTxt}</div>`;
         }
-        const millor = (rk.millor_posicio != null)
-            ? `<div class="fitxa-mini">millor posició <b>#${rk.millor_posicio}</b>${rk.millor_mitjana != null ? ` · millor mitjana <b>${rk.millor_mitjana.toFixed(3)}</b>` : ''}</div>`
+        const mp = (rk.millor_posicio != null)
+            ? `millor posició <b>#${rk.millor_posicio}</b>${rk.millor_posicio_mitjana != null ? ` (${rk.millor_posicio_mitjana.toFixed(3)})` : ''}`
+            : '';
+        const mm = (rk.millor_mitjana != null)
+            ? `millor mitjana <b>${rk.millor_mitjana.toFixed(3)}</b>${rk.millor_mitjana_posicio != null ? ` (#${rk.millor_mitjana_posicio})` : ''}`
+            : '';
+        const millor = (mp || mm)
+            ? `<div class="fitxa-mini">${[mp, mm].filter(Boolean).join(' · ')}</div>`
             : '';
         blocks.push(`<div class="fitxa-block">
             <div class="fitxa-l">Rànquing 3 Bandes</div>
