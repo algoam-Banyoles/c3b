@@ -268,21 +268,17 @@ function _evoSeccio(titol, cls, a, extra = '') {
         cos = `<div class="evo-empty">Sense partides</div>`;
     } else {
         const vd = x => `<span class="ved-v">${x.v}</span>-<span class="ved-e">${x.e}</span>-<span class="ved-d">${x.d}</span>`;
-        const rl = [];
+        const rgroup = (titol, items) => items.length
+            ? `<div class="evo-rgroup"><div class="evo-rhead">${titol}</div>${items.map(i => `<div class="evo-ritem">${i}</div>`).join('')}</div>`
+            : '';
         const H = a.rivals.habituals;
-        if (H.length) {
-            const items = H.map(h => `<b>${h.nom}</b> (${h.total} / ${vd(h)})`).join(', ');
-            rl.push(`<div class="evo-line">${H.length > 1 ? 'Rivals habituals' : 'Rival habitual'}: ${items}</div>`);
-        }
-        if (a.rivals.mesVict.length) {
-            const items = a.rivals.mesVict.map(x => `<b>${x.nom}</b> (<span class="ved-v">${x.v}V</span>)`).join(', ');
-            rl.push(`<div class="evo-line">Més victòries: ${items}</div>`);
-        }
-        if (a.rivals.mesDerr.length) {
-            const items = a.rivals.mesDerr.map(x => `<b>${x.nom}</b> (<span class="ved-d">${x.d}D</span>)`).join(', ');
-            rl.push(`<div class="evo-line">Més derrotes: ${items}</div>`);
-        }
-        const rival = rl.join('');
+        const rival =
+            rgroup(H.length > 1 ? 'Rivals habituals' : 'Rival habitual',
+                   H.map(h => `<b>${h.nom}</b> (${h.total} / ${vd(h)})`))
+            + rgroup('Més victòries',
+                   a.rivals.mesVict.map(x => `<b>${x.nom}</b> (<span class="ved-v">${x.v}V</span>)`))
+            + rgroup('Més derrotes',
+                   a.rivals.mesDerr.map(x => `<b>${x.nom}</b> (<span class="ved-d">${x.d}D</span>)`));
         const comp = a.comp && a.comp.length
             ? `<div class="evo-sep">Efectivitat per competició</div>
                <div class="evo-chips">${a.comp.map(t =>

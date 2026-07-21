@@ -56,7 +56,7 @@ async function renderFitxaFederativa() {
         const o = f.opens;
         const extra = [];
         if (o.millor_posicio != null) extra.push(`millor posició #${o.millor_posicio}`);
-        if (o.millor_en_open != null) extra.push(`millor en un open #${o.millor_en_open}`);
+        if (o.millor_en_open != null) extra.push(`millor en un open #${o.millor_en_open}${o.millor_en_open_nom ? ` (${o.millor_en_open_nom})` : ''}`);
         blocks.push(`<div class="fitxa-block">
             <div class="fitxa-l">Rànquing d'Opens 3B</div>
             <div class="fitxa-big">#${o.posicio}</div>
