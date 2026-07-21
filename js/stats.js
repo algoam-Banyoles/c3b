@@ -207,12 +207,11 @@ function _evoTemporadaDe(dateStr) {
 }
 
 // Rivals destacats d'un conjunt de partides. Cada llista mostra TOTS els rivals
-// empatats al màxim, amb un mínim de 2:
+// empatats al màxim REAL, amb un mínim de 2 (un mateix rival pot sortir a més d'una
+// llista: p.ex. el més jugat pot ser també el que més derrotes t'ha fet):
 //   · habituals → rivals amb qui més s'ha jugat (màx de partides, ≥2)
 //   · mesVict   → rivals a qui més s'ha guanyat (màx de victòries, ≥2)
 //   · mesDerr   → rivals contra qui més s'ha perdut (màx de derrotes, ≥2)
-// Vict/derr es calculen entre els NO habituals, perquè un habitual no es repeteixi
-// (el seu V-E-D ja es veu a la línia d'habituals).
 function _evoRivals(partides) {
     const r = {};
     for (const p of partides) {
@@ -226,14 +225,11 @@ function _evoRivals(partides) {
     }
     const rivals = Object.values(r);
     const byNom = (a, b) => a.nom.localeCompare(b.nom);
-    const topsBy = (list, key) => {
-        const max = list.reduce((m, x) => Math.max(m, x[key]), 0);
-        return max >= 2 ? list.filter(x => x[key] === max).sort(byNom) : [];
+    const topsBy = (key) => {
+        const max = rivals.reduce((m, x) => Math.max(m, x[key]), 0);
+        return max >= 2 ? rivals.filter(x => x[key] === max).sort(byNom) : [];
     };
-    const habituals = topsBy(rivals, 'total');
-    const habNoms = new Set(habituals.map(x => x.nom));
-    const others = rivals.filter(x => !habNoms.has(x.nom));
-    return { habituals, mesVict: topsBy(others, 'v'), mesDerr: topsBy(others, 'd') };
+    return { habituals: topsBy('total'), mesVict: topsBy('v'), mesDerr: topsBy('d') };
 }
 
 function _evoAgg(partides) {
