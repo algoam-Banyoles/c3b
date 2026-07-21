@@ -108,10 +108,16 @@ async function renderFitxaFederativa() {
         const idxLine = idx
             ? `<div class="fitxa-mini" title="${idxTip}">Índex de rendiment <b>${(idx.weighted_index ?? 0).toFixed(1)}</b>${idx.crossover != null ? ` · competitiu fins a mitjana <b>${idx.crossover.toFixed(3)}</b>` : ''} <span class="fitxa-info">ⓘ</span></div>`
             : '';
+        const tick = res => res === 1 ? '<span class="ved-v">✓</span>' : res === -1 ? '<span class="ved-d">✗</span>' : '<span class="ved-e">=</span>';
+        const extrem = (label, x) => x
+            ? `<div class="fitxa-mini">${label}: <b>${x.nom}</b> <span class="fitxa-mut">(mitj ${x.rating.toFixed(3)})</span> ${tick(x.res)} <span class="fitxa-mut">${x.myc}-${x.oppc}</span></div>`
+            : '';
         blocks.push(`<div class="fitxa-block fitxa-radar">
             <div class="fitxa-l">Rendiment per nivell d'oponent</div>
             <div class="rb-list">${bars}</div>
             ${idxLine}
+            ${extrem('Rival de més nivell', f.radar.hardest)}
+            ${extrem('Rival de menys nivell', f.radar.easiest)}
             <div class="fitxa-note">% de victòries segons la mitjana del rival (trams de menys a més nivell).</div>
         </div>`);
     }
