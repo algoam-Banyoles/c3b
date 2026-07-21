@@ -60,18 +60,8 @@ function insertNavbar() {
                     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
                 ">👤 Gestionar Usuaris</button>
 
-                <button onclick="NavbarComponent.canviarUsuari()" style="
-                    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-                    color: white;
-                    border: none;
-                    padding: 8px 15px;
-                    border-radius: 6px;
-                    font-size: 13px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
-                ">🔄 Canviar Usuari</button>
+                <!-- Accés directe als altres jugadors (només n'hi ha tres) -->
+                <div id="navbarAltresJugadors" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
             </div>
         </div>
 
@@ -160,12 +150,21 @@ const NavbarComponent = {
         this.renderNavbar();
     },
 
-    // Carregar modalitats
+    usuaris: [],
+
+    // Carregar modalitats + llista d'usuaris (per als botons d'accés directe)
     async carregarDades() {
         try {
             this.modalitats = await BillarConfig.getModalitats();
         } catch (error) {
             console.error('Error carregant modalitats:', error);
+        }
+        try {
+            const r = await fetch(`${BillarConfig.API_BASE}/api/usuaris`);
+            this.usuaris = r.ok ? await r.json() : [];
+        } catch (error) {
+            console.error('Error carregant usuaris:', error);
+            this.usuaris = [];
         }
     },
 
@@ -204,6 +203,20 @@ const NavbarComponent = {
         const usuariEl = document.getElementById('navbarUsuari');
         if (usuariEl) {
             usuariEl.textContent = this.config.usuariNom;
+        }
+
+        // Botons d'accés directe als altres jugadors (només n'hi ha tres).
+        const altresEl = document.getElementById('navbarAltresJugadors');
+        if (altresEl) {
+            const altres = (this.usuaris || []).filter(u => u.id !== this.config.usuariId);
+            altresEl.innerHTML = altres.map(u => `
+                <button onclick="NavbarComponent.anarAJugador(${u.id})" style="
+                    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+                    color: white; border: none; padding: 8px 15px; border-radius: 6px;
+                    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+                    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+                ">🔄 ${u.nom}</button>
+            `).join('');
         }
 
         // Renderitzar botons de modalitat (només si hi ha més d'una modalitat amb partides)
@@ -251,11 +264,12 @@ const NavbarComponent = {
         window.location.reload();
     },
 
-    // Canviar usuari
-    canviarUsuari() {
-        if (confirm('Vols canviar d\'usuari? Es carregarà la pantalla de selecció.')) {
-            BillarConfig.changeUser();
-        }
+    // Accés directe a un altre jugador (canvi immediat, sense pantalla de selecció).
+    anarAJugador(id) {
+        const u = (this.usuaris || []).find(x => x.id === id);
+        if (!u || id === this.config.usuariId) return;
+        BillarConfig.saveConfig(id, this.config.modalitatId, u.nom, this.config.modalitatNom);
+        window.location.reload();
     },
 
     // Gestionar usuaris
