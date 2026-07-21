@@ -138,7 +138,10 @@ function calcularFiabilitatPerTipus(partides) {
             fiabilitat: (stats.puntsGuanyats / stats.puntsDisputats) * 100,
             puntsGuanyats: stats.puntsGuanyats,
             puntsDisputats: stats.puntsDisputats,
-            partides: stats.partides.length
+            partides: stats.partides.length,
+            victories: stats.partides.filter(p => p.caramboles > p.caramboles_oponent).length,
+            empats: stats.partides.filter(p => p.caramboles === p.caramboles_oponent).length,
+            derrotes: stats.partides.filter(p => p.caramboles < p.caramboles_oponent).length
         }))
         .sort((a, b) => b.fiabilitat - a.fiabilitat);
 }

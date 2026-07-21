@@ -206,6 +206,30 @@ function _evoTemporadaDe(dateStr) {
     return mes >= 8 ? `${any}-${any + 1}` : `${any - 1}-${any}`;
 }
 
+// Rivals destacats d'un conjunt de partides, amb llindars mínims perquè surtin:
+//   · habitual  → el rival amb qui més s'ha jugat (mínim 2 partides)
+//   · mesVict   → el rival a qui més s'ha guanyat (mínim 2 victòries)
+//   · mesDerr   → el rival contra qui més s'ha perdut (mínim 2 derrotes)
+function _evoRivals(partides) {
+    const r = {};
+    for (const p of partides) {
+        const o = (p.oponent || '').trim();
+        if (!o) continue;
+        if (!r[o]) r[o] = { nom: o, total: 0, v: 0, e: 0, d: 0 };
+        r[o].total++;
+        if (p.caramboles > p.caramboles_oponent) r[o].v++;
+        else if (p.caramboles === p.caramboles_oponent) r[o].e++;
+        else r[o].d++;
+    }
+    const rivals = Object.values(r);
+    const pick = (key, min) => {
+        let best = null;
+        for (const x of rivals) if (x[key] >= min && (!best || x[key] > best[key])) best = x;
+        return best;
+    };
+    return { habitual: pick('total', 2), mesVict: pick('v', 2), mesDerr: pick('d', 2) };
+}
+
 function _evoAgg(partides) {
     if (!partides.length) return null;
     const c = partides.reduce((s, p) => s + p.caramboles, 0);
@@ -222,7 +246,7 @@ function _evoAgg(partides) {
         millor: { mj: avg(mi), op: mi.oponent }, pitjor: { mj: avg(pi), op: pi.oponent },
         victories: pts.victories, empats: pts.empats, derrotes: pts.derrotes,
         puntsGuanyats: pts.puntsGuanyats, puntsDisputats: pts.puntsDisputats, efect, sm,
-        rival: trobarRivalMesFrequent(partides),
+        rivals: _evoRivals(partides),
         comp: calcularFiabilitatPerTipus(partides)
     };
 }
@@ -237,13 +261,15 @@ function _evoSeccio(titol, cls, a, extra = '') {
     if (!a) {
         cos = `<div class="evo-empty">Sense partides</div>`;
     } else {
-        const rival = a.rival
-            ? `<div class="evo-line">Rival habitual: <b>${a.rival.nom}</b> (${a.rival.total})</div>`
-            : '';
+        const rl = [];
+        if (a.rivals.habitual) rl.push(`<div class="evo-line">Rival habitual: <b>${a.rivals.habitual.nom}</b> (${a.rivals.habitual.total})</div>`);
+        if (a.rivals.mesVict) rl.push(`<div class="evo-line">Rival més victòries: <b>${a.rivals.mesVict.nom}</b> (<span class="ved-v">${a.rivals.mesVict.v}V</span>)</div>`);
+        if (a.rivals.mesDerr) rl.push(`<div class="evo-line">Rival més derrotes: <b>${a.rivals.mesDerr.nom}</b> (<span class="ved-d">${a.rivals.mesDerr.d}D</span>)</div>`);
+        const rival = rl.join('');
         const comp = a.comp && a.comp.length
             ? `<div class="evo-sep">Efectivitat per competició</div>
                <div class="evo-chips">${a.comp.map(t =>
-                   `<span class="evo-chip">${t.tipus} <b>${Math.round(t.fiabilitat)}%</b></span>`).join('')}</div>`
+                   `<span class="evo-chip">${t.tipus} <b>${Math.round(t.fiabilitat)}%</b> <span class="evo-cved"><span class="ved-v">${t.victories}</span>-<span class="ved-e">${t.empats}</span>-<span class="ved-d">${t.derrotes}</span></span></span>`).join('')}</div>`
             : '';
         cos = `<div class="evo-mjl">Mitjana</div><div class="evo-mj">${a.mj.toFixed(3)}</div>
            <div class="evo-sub">${a.n} partides · ${a.c}/${a.e}</div>
