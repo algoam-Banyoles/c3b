@@ -34,11 +34,14 @@ async function renderFitxaFederativa() {
             prox = `<div class="fitxa-prox ${cls}">→ proper rànquing: <b>#${rk.posicio_provisional}</b>
                 (${(rk.mitjana_provisional ?? 0).toFixed(3)}) ${dTxt}</div>`;
         }
+        const millor = (rk.millor_posicio != null)
+            ? `<div class="fitxa-mini">millor posició <b>#${rk.millor_posicio}</b>${rk.millor_mitjana != null ? ` · millor mitjana <b>${rk.millor_mitjana.toFixed(3)}</b>` : ''}</div>`
+            : '';
         blocks.push(`<div class="fitxa-block">
             <div class="fitxa-l">Rànquing 3 Bandes</div>
             <div class="fitxa-big">#${rk.posicio_oficial}</div>
-            <div class="fitxa-sub">mitjana ${(rk.mitjana_oficial ?? 0).toFixed(3)}</div>
-            ${prox}
+            <div class="fitxa-sub">posició actual · mitjana ${(rk.mitjana_oficial ?? 0).toFixed(3)}</div>
+            ${millor}${prox}
         </div>`);
     }
 
@@ -70,8 +73,12 @@ async function renderFitxaFederativa() {
             </div>`;
         }).join('');
         const idx = f.radar.index;
+        const idxTip = 'Índex de rendiment = % de victòries ponderat pel nivell del rival: '
+            + '100 × (suma de mitjanes dels rivals VENÇUTS) / (suma de mitjanes de TOTS els '
+            + 'rivals en partides decisives, sense empats). Guanyar rivals forts compta més. '
+            + 'Crossover = nivell de rival on la teva taxa de victòries creua el 50%.';
         const idxLine = idx
-            ? `<div class="fitxa-mini">Índex de rendiment <b>${(idx.weighted_index ?? 0).toFixed(1)}</b>${idx.crossover != null ? ` · competitiu fins a mitjana <b>${idx.crossover.toFixed(3)}</b>` : ''}</div>`
+            ? `<div class="fitxa-mini" title="${idxTip}">Índex de rendiment <b>${(idx.weighted_index ?? 0).toFixed(1)}</b>${idx.crossover != null ? ` · competitiu fins a mitjana <b>${idx.crossover.toFixed(3)}</b>` : ''} <span class="fitxa-info">ⓘ</span></div>`
             : '';
         blocks.push(`<div class="fitxa-block fitxa-radar">
             <div class="fitxa-l">Rendiment per nivell d'oponent</div>

@@ -206,10 +206,13 @@ function _evoTemporadaDe(dateStr) {
     return mes >= 8 ? `${any}-${any + 1}` : `${any - 1}-${any}`;
 }
 
-// Rivals destacats d'un conjunt de partides, amb llindars mínims perquè surtin:
-//   · habitual  → el rival amb qui més s'ha jugat (mínim 2 partides)
-//   · mesVict   → el rival a qui més s'ha guanyat (mínim 2 victòries)
-//   · mesDerr   → el rival contra qui més s'ha perdut (mínim 2 derrotes)
+// Rivals destacats d'un conjunt de partides. Cada llista mostra TOTS els rivals
+// empatats al màxim, amb un mínim de 2:
+//   · habituals → rivals amb qui més s'ha jugat (màx de partides, ≥2)
+//   · mesVict   → rivals a qui més s'ha guanyat (màx de victòries, ≥2)
+//   · mesDerr   → rivals contra qui més s'ha perdut (màx de derrotes, ≥2)
+// Vict/derr es calculen entre els NO habituals, perquè un habitual no es repeteixi
+// (el seu V-E-D ja es veu a la línia d'habituals).
 function _evoRivals(partides) {
     const r = {};
     for (const p of partides) {
@@ -222,12 +225,15 @@ function _evoRivals(partides) {
         else r[o].d++;
     }
     const rivals = Object.values(r);
-    const pick = (key, min) => {
-        let best = null;
-        for (const x of rivals) if (x[key] >= min && (!best || x[key] > best[key])) best = x;
-        return best;
+    const byNom = (a, b) => a.nom.localeCompare(b.nom);
+    const topsBy = (list, key) => {
+        const max = list.reduce((m, x) => Math.max(m, x[key]), 0);
+        return max >= 2 ? list.filter(x => x[key] === max).sort(byNom) : [];
     };
-    return { habitual: pick('total', 2), mesVict: pick('v', 2), mesDerr: pick('d', 2) };
+    const habituals = topsBy(rivals, 'total');
+    const habNoms = new Set(habituals.map(x => x.nom));
+    const others = rivals.filter(x => !habNoms.has(x.nom));
+    return { habituals, mesVict: topsBy(others, 'v'), mesDerr: topsBy(others, 'd') };
 }
 
 function _evoAgg(partides) {
@@ -261,10 +267,21 @@ function _evoSeccio(titol, cls, a, extra = '') {
     if (!a) {
         cos = `<div class="evo-empty">Sense partides</div>`;
     } else {
+        const vd = x => `<span class="ved-v">${x.v}</span>-<span class="ved-e">${x.e}</span>-<span class="ved-d">${x.d}</span>`;
         const rl = [];
-        if (a.rivals.habitual) rl.push(`<div class="evo-line">Rival habitual: <b>${a.rivals.habitual.nom}</b> (${a.rivals.habitual.total})</div>`);
-        if (a.rivals.mesVict) rl.push(`<div class="evo-line">Rival més victòries: <b>${a.rivals.mesVict.nom}</b> (<span class="ved-v">${a.rivals.mesVict.v}V</span>)</div>`);
-        if (a.rivals.mesDerr) rl.push(`<div class="evo-line">Rival més derrotes: <b>${a.rivals.mesDerr.nom}</b> (<span class="ved-d">${a.rivals.mesDerr.d}D</span>)</div>`);
+        const H = a.rivals.habituals;
+        if (H.length) {
+            const items = H.map(h => `<b>${h.nom}</b> (${h.total} / ${vd(h)})`).join(', ');
+            rl.push(`<div class="evo-line">${H.length > 1 ? 'Rivals habituals' : 'Rival habitual'}: ${items}</div>`);
+        }
+        if (a.rivals.mesVict.length) {
+            const items = a.rivals.mesVict.map(x => `<b>${x.nom}</b> (<span class="ved-v">${x.v}V</span>)`).join(', ');
+            rl.push(`<div class="evo-line">Més victòries: ${items}</div>`);
+        }
+        if (a.rivals.mesDerr.length) {
+            const items = a.rivals.mesDerr.map(x => `<b>${x.nom}</b> (<span class="ved-d">${x.d}D</span>)`).join(', ');
+            rl.push(`<div class="evo-line">Més derrotes: ${items}</div>`);
+        }
         const rival = rl.join('');
         const comp = a.comp && a.comp.length
             ? `<div class="evo-sep">Efectivitat per competició</div>
