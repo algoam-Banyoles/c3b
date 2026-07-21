@@ -326,16 +326,10 @@
         tr.ranquing-window:hover td {
             background: #fde68a;
         }
-        /* Trama superposada: partides que computaran al PROPER rànquing (projecció).
-           Es pot combinar amb .ranquing-window (groc + trama) o anar sola. */
-        tr.ranquing-prox td,
-        tr.ranquing-prox:hover td {
-            background-image: repeating-linear-gradient(
-                135deg,
-                transparent 0, transparent 5px,
-                rgba(37, 99, 235, 0.22) 5px, rgba(37, 99, 235, 0.22) 9px
-            );
-            border-bottom-color: #93c5fd;
+        /* Barra lateral verda: partides que computaran al PROPER rànquing
+           (projecció). Es combina amb .ranquing-window (groc + barra) o va sola. */
+        tr.ranquing-prox td:first-child {
+            box-shadow: inset 4px 0 0 #059669;
         }
         /* Llegenda del ressaltat de partides */
         .partides-legend {
@@ -348,12 +342,9 @@
         }
         .partides-legend .swatch.now { background: #fef3c7; border-color: #fde68a; }
         .partides-legend .swatch.next {
-            background-image: repeating-linear-gradient(
-                135deg,
-                transparent 0, transparent 5px,
-                rgba(37, 99, 235, 0.22) 5px, rgba(37, 99, 235, 0.22) 9px
-            );
-            border-color: #93c5fd;
+            background: #fff;
+            border-color: #6ee7b7;
+            box-shadow: inset 4px 0 0 #059669;
         }
         
         .best {
