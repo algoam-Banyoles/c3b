@@ -352,7 +352,10 @@
         .evo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         @media (max-width: 720px) { .evo-grid { grid-template-columns: 1fr; } }
         .evo-sec { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); overflow: hidden; }
-        .evo-h { padding: 10px 14px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #fff; }
+        .evo-h { padding: 10px 14px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; user-select: none; }
+        .evo-chevron { font-size: 11px; transition: transform .15s; opacity: .85; }
+        .evo-sec.collapsed .evo-chevron { transform: rotate(-90deg); }
+        .evo-sec.collapsed .evo-b { display: none; }
         .evo-hist { background: linear-gradient(135deg, #64748b, #475569); }
         .evo-cur  { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .evo-prev { background: linear-gradient(135deg, #06b6d4, #0891b2); }

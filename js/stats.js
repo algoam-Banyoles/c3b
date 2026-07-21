@@ -296,7 +296,7 @@ function _evoSeccio(titol, cls, a, extra = '') {
            </div>
            ${rival}${comp}`;
     }
-    return `<div class="evo-sec"><div class="evo-h ${cls}">${titol}</div><div class="evo-b">${cos}${extra}</div></div>`;
+    return `<div class="evo-sec"><div class="evo-h ${cls}" onclick="this.parentElement.classList.toggle('collapsed')"><span>${titol}</span><span class="evo-chevron">▾</span></div><div class="evo-b">${cos}${extra}</div></div>`;
 }
 
 function renderEvolutionIndicators() {
