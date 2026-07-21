@@ -43,6 +43,7 @@ async function init() {
 
     updateGlobalStats();
     renderEvolutionIndicators();
+    if (typeof renderFitxaFederativa === 'function') renderFitxaFederativa();
     updateQuickStats(currentRange.start, currentRange.end);
     renderPartidesTable();
     setupRangeSlider();

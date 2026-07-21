@@ -183,6 +183,25 @@ app.get('/api/partides', async (req, res) => {
     }
 });
 
+// Resum de la fitxa federativa (rànquing, opens, radar, palmarès) — el publica
+// FCBillar a public.estadistiques_fitxa (consistent amb la fitxa de FCBillar).
+app.get('/api/fitxa', async (req, res) => {
+    try {
+        const { usuari_id } = req.query;
+        if (!usuari_id) return res.json(null);
+        const { data, error } = await supabase
+            .from('estadistiques_fitxa')
+            .select('payload_json, updated_at')
+            .eq('usuari_id', usuari_id)
+            .maybeSingle();
+        if (error) throw error;
+        res.json(data ? { ...data.payload_json, updated_at: data.updated_at } : null);
+    } catch (error) {
+        console.error('❌ Error llegint fitxa:', error);
+        res.status(500).json({ error: 'Error llegint fitxa', details: error.message });
+    }
+});
+
 // Crear una nova partida
 app.post('/api/partides', async (req, res) => {
     try {

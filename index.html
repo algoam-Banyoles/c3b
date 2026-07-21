@@ -380,7 +380,38 @@
         .evo-prox .d { font-size: 12.5px; margin-top: 3px; font-weight: 600; color: #047857; }
         .evo-prox .d.down { color: #b91c1c; }
         .evo-empty { color: #94a3b8; font-size: 13px; padding: 8px 0; }
-        
+        /* Fitxa federativa (FCBillar) */
+        #fitxaFederativa > .card { margin-bottom: 16px; }
+        .fitxa-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 6px; }
+        @media (max-width: 720px) { .fitxa-grid { grid-template-columns: 1fr; } }
+        .fitxa-block { background: #f8fafc; border-radius: 10px; padding: 12px 14px; }
+        .fitxa-l { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #64748b; font-weight: 700; }
+        .fitxa-big { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -.02em; color: #1e293b; margin-top: 4px; }
+        .fitxa-sub { font-size: 13px; color: #64748b; margin-top: 3px; }
+        .fitxa-mini { font-size: 12px; color: #64748b; margin-top: 6px; }
+        .fitxa-note { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+        .fitxa-prox { font-size: 12.5px; margin-top: 7px; font-weight: 600; color: #047857; }
+        .fitxa-prox.down { color: #b91c1c; } .fitxa-prox b { font-weight: 800; }
+        .rb-list { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+        .rb-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+        .rb-label { width: 76px; flex-shrink: 0; color: #64748b; font-variant-numeric: tabular-nums; }
+        .rb-track { flex: 1; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+        .rb-fill { height: 100%; border-radius: 5px; }
+        .rb-fill.ok { background: #059669; } .rb-fill.mid { background: #f59e0b; } .rb-fill.low { background: #dc2626; }
+        .rb-pct { width: 34px; text-align: right; font-weight: 700; color: #334155; font-variant-numeric: tabular-nums; }
+        .rb-ved { width: 58px; text-align: right; color: #94a3b8; font-variant-numeric: tabular-nums; }
+        .fitxa-pal { margin-top: 12px; }
+        .fitxa-pal .fitxa-l { margin-bottom: 4px; }
+        .pal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        .pal-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .pal-medal { font-size: 16px; }
+        .pal-nom { flex: 1; min-width: 0; color: #1e293b; }
+        .pal-temp { color: #94a3b8; font-size: 11px; }
+        .pal-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+        .pal-campionat { background: #dbeafe; color: #1d4ed8; }
+        .pal-open { background: #fef3c7; color: #b45309; }
+        .pal-torneig { background: #f1f5f9; color: #64748b; }
+
         .best {
             color: #28a745;
             font-weight: bold;
@@ -674,6 +705,7 @@
         
         <!-- TAB: EVOLUCIÓ -->
         <div id="evolution" class="tab-content active">
+            <div id="fitxaFederativa"></div>
             <div class="evo-wrap" id="evolutionIndicators"></div>
             <div class="card">
                 <h2><span class="icon">📈</span> Evolució de la Mitjana</h2>
@@ -886,6 +918,7 @@
     <script src="js/initial-data.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/stats.js"></script>
+    <script src="js/fitxa.js"></script>
     <script src="js/chart.js"></script>
     <script src="js/simulator.js"></script>
     <script src="js/table.js"></script>
