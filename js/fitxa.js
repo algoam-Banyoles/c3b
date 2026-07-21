@@ -43,11 +43,33 @@ async function renderFitxaFederativa() {
         const millor = (mp || mm)
             ? `<div class="fitxa-mini">${[mp, mm].filter(Boolean).join(' · ')}</div>`
             : '';
+        let inici = '';
+        if (rk.posicio_inici_temporada != null && rk.posicio_oficial != null) {
+            const d = rk.posicio_inici_temporada - rk.posicio_oficial; // >0 = ha pujat
+            const fl = d > 0 ? '▲' : d < 0 ? '▼' : '▬';
+            const cls = d > 0 ? 'fitxa-up' : d < 0 ? 'fitxa-dn' : '';
+            const t = d !== 0 ? ` · <span class="${cls}">${fl} ${Math.abs(d)} aquesta temporada</span>` : '';
+            inici = `<div class="fitxa-mini">inici de temporada <b>#${rk.posicio_inici_temporada}</b>${t}</div>`;
+        }
         blocks.push(`<div class="fitxa-block">
             <div class="fitxa-l">Rànquing 3 Bandes</div>
             <div class="fitxa-big">#${rk.posicio_oficial}</div>
             <div class="fitxa-sub">posició actual · mitjana ${(rk.mitjana_oficial ?? 0).toFixed(3)}</div>
-            ${millor}${prox}
+            ${millor}${inici}${prox}
+        </div>`);
+    }
+
+    // --- Posició al rànquing del club (per temporada) ---
+    if (f.club_actual || f.club_anterior) {
+        const ord = n => ({ 1: '1r', 2: '2n', 3: '3r', 4: '4t' }[n] || (n + 'è'));
+        const line = (etiqueta, c) => c
+            ? `<div class="fitxa-mini" style="margin-top:7px;">${etiqueta}</div>
+               <div class="fitxa-clubline"><b>${ord(c.posicio)}</b> de ${c.total} <span class="fitxa-mut">· ${c.nom}</span></div>`
+            : '';
+        blocks.push(`<div class="fitxa-block">
+            <div class="fitxa-l">Posició al club</div>
+            ${line(`Temporada actual${f.club_actual ? ` (${f.club_actual.temporada})` : ''}`, f.club_actual)}
+            ${line(`Temporada anterior${f.club_anterior ? ` (${f.club_anterior.temporada})` : ''}`, f.club_anterior)}
         </div>`);
     }
 
