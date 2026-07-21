@@ -42,6 +42,7 @@ async function init() {
     }
 
     updateGlobalStats();
+    renderEvolutionIndicators();
     updateQuickStats(currentRange.start, currentRange.end);
     renderPartidesTable();
     setupRangeSlider();
@@ -159,6 +160,7 @@ function restaurarPeriode() {
 
 function refreshAll() {
     updateGlobalStats();
+    renderEvolutionIndicators();
 
     if (PARTIDES_DATA.length >= ROLLING_WINDOW) {
         currentRange.start = PARTIDES_DATA.length - ROLLING_WINDOW;

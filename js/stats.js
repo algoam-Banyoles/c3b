@@ -72,12 +72,6 @@ function updateGlobalStats() {
             <div class="value">${puntsTotal.puntsGuanyats}/${puntsTotal.puntsDisputats}</div>
             <div class="subvalue">${((puntsTotal.puntsGuanyats / puntsTotal.puntsDisputats) * 100).toFixed(1)}% efectivitat</div>
         </div>
-        <div class="stat-card">
-            <div class="label">Mitjana Global</div>
-            <div class="value">${mitjanaGlobal.toFixed(3)}</div>
-            <div class="subvalue">${totalCaramboles} caramboles</div>
-        </div>
-        ${ranquingCardHTML}
         <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
             <div class="label" style="font-size: 11px; margin-bottom: 3px;">🏆 Millor Partida</div>
             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${millorPartida.oponent}</div>
@@ -96,22 +90,6 @@ function updateGlobalStats() {
             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${rivalFrequent.nom}</div>
             <div class="value" style="font-size: 20px;">${rivalFrequent.total} partides</div>
             <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${rivalFrequent.victories}V - ${rivalFrequent.empats}E - ${rivalFrequent.derrotes}D</div>
-        </div>
-        ` : ''}
-        ${mitjanesTemporada.length > 0 ? `
-        <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-            <div class="label" style="font-size: 11px; margin-bottom: 3px;">📅 Temporada Actual ${mitjanesTemporada[0].temporada}</div>
-            <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${mitjanesTemporada[0].partides} partides</div>
-            <div class="value" style="font-size: 20px;">${mitjanesTemporada[0].mitjana.toFixed(3)}</div>
-            <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${mitjanesTemporada[0].caramboles}/${mitjanesTemporada[0].entrades}</div>
-        </div>
-        ` : ''}
-        ${mitjanesTemporada.length > 1 ? `
-        <div class="stat-card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
-            <div class="label" style="font-size: 11px; margin-bottom: 3px;">📅 Temporada Anterior ${mitjanesTemporada[1].temporada}</div>
-            <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">${mitjanesTemporada[1].partides} partides</div>
-            <div class="value" style="font-size: 20px;">${mitjanesTemporada[1].mitjana.toFixed(3)}</div>
-            <div style="font-size: 10px; opacity: 0.85; margin-top: 3px;">${mitjanesTemporada[1].caramboles}/${mitjanesTemporada[1].entrades}</div>
         </div>
         ` : ''}
         ${fiabilitatPerTipus.length > 0 ? `
@@ -209,4 +187,100 @@ function updateQuickStats(start, end) {
     `;
 
     document.getElementById('quickStats').innerHTML = statsHTML;
+}
+
+// ============================================================================
+// Indicadors d'evolució: 3 seccions (Històric / Temp. actual / Temp. anterior),
+// els mateixos indicadors a cadascuna + "Propera mitjana" a Temporada actual.
+// Es calcula SEMPRE sobre PARTIDES_RAW (totes), independentment del filtre de
+// període: mostra les tres finestres alhora.
+// ============================================================================
+
+function _evoTemporadaDe(dateStr) {
+    const d = new Date(dateStr);
+    const mes = d.getMonth() + 1, any = d.getFullYear();
+    return mes >= 8 ? `${any}-${any + 1}` : `${any - 1}-${any}`;
+}
+
+function _evoAgg(partides) {
+    if (!partides.length) return null;
+    const c = partides.reduce((s, p) => s + p.caramboles, 0);
+    const e = partides.reduce((s, p) => s + p.entrades, 0);
+    const avgs = partides.map(p => (p.entrades ? p.caramboles / p.entrades : 0));
+    const pts = calcularEstadistiquesPunts(partides);
+    const efect = pts.puntsDisputats ? (pts.puntsGuanyats / pts.puntsDisputats) * 100 : 0;
+    return {
+        n: partides.length, c, e,
+        mj: e ? c / e : 0,
+        millor: Math.max(...avgs), pitjor: Math.min(...avgs),
+        victories: pts.victories, empats: pts.empats, derrotes: pts.derrotes, efect
+    };
+}
+
+function _mjOf(partides) {
+    const e = partides.reduce((s, p) => s + p.entrades, 0);
+    return e ? partides.reduce((s, p) => s + p.caramboles, 0) / e : null;
+}
+
+function _evoSeccio(titol, cls, a, extra = '') {
+    const cos = a
+        ? `<div class="evo-mjl">Mitjana</div><div class="evo-mj">${a.mj.toFixed(3)}</div>
+           <div class="evo-sub">${a.n} partides · ${a.c}/${a.e}</div>
+           <div class="evo-row">
+               <div class="evo-mini"><div class="l">Millor</div><div class="v best">${a.millor.toFixed(3)}</div></div>
+               <div class="evo-mini"><div class="l">Pitjor</div><div class="v worst">${a.pitjor.toFixed(3)}</div></div>
+           </div>
+           <div class="evo-row">
+               <div class="evo-mini"><div class="l">Efectivitat</div><div class="v">${a.efect.toFixed(1)}%</div></div>
+               <div class="evo-mini"><div class="l">V-E-D</div><div class="v"><span class="ved-v">${a.victories}</span>-<span class="ved-e">${a.empats}</span>-<span class="ved-d">${a.derrotes}</span></div></div>
+           </div>`
+        : `<div class="evo-empty">Sense partides</div>`;
+    return `<div class="evo-sec"><div class="evo-h ${cls}">${titol}</div><div class="evo-b">${cos}${extra}</div></div>`;
+}
+
+function renderEvolutionIndicators() {
+    const el = document.getElementById('evolutionIndicators');
+    if (!el) return;
+    const all = (Array.isArray(PARTIDES_RAW) && PARTIDES_RAW.length) ? PARTIDES_RAW : PARTIDES_DATA;
+    if (!all.length) { el.innerHTML = ''; return; }
+
+    const ambData = all.filter(p => p.data);
+    const now = new Date();
+    const mesAra = now.getMonth() + 1, anyAra = now.getFullYear();
+    const tempActual = mesAra >= 8 ? `${anyAra}-${anyAra + 1}` : `${anyAra - 1}-${anyAra}`;
+    const [ta, tb] = tempActual.split('-').map(Number);
+    const tempAnterior = `${ta - 1}-${tb - 1}`;
+
+    const hist = _evoAgg(all);
+    const cur = _evoAgg(ambData.filter(p => _evoTemporadaDe(p.data) === tempActual));
+    const prev = _evoAgg(ambData.filter(p => _evoTemporadaDe(p.data) === tempAnterior));
+
+    // Propera mitjana (proper rànquing) + rànquing actual, per la delta.
+    const compGames = all.filter(p => p.computa);
+    const proxGames = all.filter(p => p.computa_prox);
+    const mjActual = compGames.length ? _mjOf(compGames) : null;
+    const mjProx = proxGames.length ? _mjOf(proxGames) : null;
+    let proxBlock = '';
+    if (mjProx != null) {
+        let dtxt = 'projecció del proper rànquing';
+        let dcls = '';
+        if (mjActual != null) {
+            const delta = mjProx - mjActual;
+            const fletxa = delta > 0.0005 ? '▲' : delta < -0.0005 ? '▼' : '▬';
+            dcls = delta < -0.0005 ? 'down' : '';
+            dtxt = `${fletxa} ${delta >= 0 ? '+' : ''}${delta.toFixed(3)} vs rànquing actual (${mjActual.toFixed(3)})`;
+        }
+        proxBlock = `<div class="evo-prox">
+            <div class="l">🟢 Propera mitjana</div>
+            <div class="v">${mjProx.toFixed(3)}</div>
+            <div class="d ${dcls}">${dtxt}</div>
+        </div>`;
+    }
+
+    el.innerHTML = `<h2>📊 Indicadors d'evolució</h2>
+        <div class="evo-grid">
+            ${_evoSeccio('Històric', 'evo-hist', hist)}
+            ${_evoSeccio(`Temporada actual · ${tempActual}`, 'evo-cur', cur, proxBlock)}
+            ${_evoSeccio(`Temporada anterior · ${tempAnterior}`, 'evo-prev', prev)}
+        </div>`;
 }
